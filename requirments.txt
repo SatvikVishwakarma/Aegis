@@ -1,0 +1,11 @@
+fastapi  
+uvicorn  
+sqlalchemy[asyncio]  
+aiosqlite  
+pydantic  
+passlib[bcrypt]  
+python-jose  
+python-dotenv  
+requests  
+httpx  
+loguru
