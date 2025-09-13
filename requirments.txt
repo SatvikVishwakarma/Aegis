@@ -1,10 +1,10 @@
 fastapi  
-uvicorn  
+uvicorn[standard]  
 sqlalchemy[asyncio]  
 aiosqlite  
 pydantic  
 passlib[bcrypt]  
-python-jose  
+python-jose[cryptography]  
 python-dotenv  
 requests  
 httpx  
