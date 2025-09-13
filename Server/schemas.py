@@ -23,6 +23,12 @@ class NodeRegisterRequest(NodeBase):
     pass
 
 
+# THIS IS THE NEW CLASS YOU MUST ADD
+class NodeHeartbeatRequest(BaseModel):
+    """Schema for a node sending a heartbeat."""
+    hostname: str = Field(..., description="The unique hostname of the node checking in.")
+
+
 class NodeResponse(NodeBase):
     """
     Schema for representing a Node in API responses.
@@ -32,8 +38,6 @@ class NodeResponse(NodeBase):
     status: str = Field(description="The current operational status of the node (e.g., 'online', 'offline').")
     last_seen: datetime.datetime
 
-    # Pydantic v2 configuration to enable ORM mode (from_attributes=True).
-    # This allows the model to be created from an SQLAlchemy model instance.
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -84,8 +88,6 @@ class PolicyResponse(PolicyBase):
     Includes the list of nodes assigned to this policy.
     """
     id: int
-    # The response will include a list of nodes that this policy is assigned to.
-    # We use the NodeResponse schema to structure this data.
     assigned_nodes: List[NodeResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
