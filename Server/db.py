@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import (
 
 # Assuming your SQLAlchemy models are defined in a 'models.py' file
 # and inherit from a common 'Base' declarative base class.
-from .models import Base
+from models import Base
 
 # --- Database Configuration ---
 
