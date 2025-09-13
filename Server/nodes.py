@@ -14,8 +14,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 #  ├── db.py
 #  ├── models.py
 #  └── schemas.py
-from .. import models, schemas
-from .db import get_db
+import models
+import schemas
+from db import get_db
 
 router = APIRouter(
     prefix="/nodes",
