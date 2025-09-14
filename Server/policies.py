@@ -24,11 +24,10 @@ class PolicyAssignmentRequest(BaseModel):
     node_id: int
     policy_id: int
 
-
 @router.post(
     "",
     response_model=schemas.PolicyResponse,
-    status_code=status.HTTP_2_CREATED,
+    status_code=status.HTTP_201_CREATED, # <--- THIS IS THE FIX
     summary="Create a New Policy",
 )
 async def create_policy(
