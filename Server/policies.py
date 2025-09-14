@@ -1,4 +1,4 @@
-# policies.py (Fully Updated)
+# policies.py (Fully Updated with MissingGreenlet fix)
 
 from typing import List
 
@@ -8,7 +8,6 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-# --- Project-specific Imports for a flat structure ---
 import models
 import schemas
 from db import get_db
@@ -19,15 +18,15 @@ router = APIRouter(
 )
 
 
-# --- Local Schema for Assignment ---
 class PolicyAssignmentRequest(BaseModel):
     node_id: int
     policy_id: int
 
+
 @router.post(
     "",
     response_model=schemas.PolicyResponse,
-    status_code=status.HTTP_201_CREATED, # <--- THIS IS THE FIX
+    status_code=status.HTTP_201_CREATED,
     summary="Create a New Policy",
 )
 async def create_policy(
@@ -46,10 +45,19 @@ async def create_policy(
     new_policy = models.Policy(**policy_in.model_dump())
     db.add(new_policy)
     await db.commit()
-    await db.refresh(new_policy)
+    # Get the ID to re-fetch the object with relationships loaded
+    new_policy_id = new_policy.id
 
-    # Corrected: Explicitly validate the response to prevent errors
-    return schemas.PolicyResponse.model_validate(new_policy)
+    # Eagerly load the object to prevent MissingGreenlet error
+    stmt = (
+        select(models.Policy)
+        .where(models.Policy.id == new_policy_id)
+        .options(selectinload(models.Policy.assigned_nodes))
+    )
+    result = await db.execute(stmt)
+    final_policy = result.scalar_one()
+
+    return schemas.PolicyResponse.model_validate(final_policy)
 
 
 @router.get(
@@ -62,7 +70,6 @@ async def list_policies(db: AsyncSession = Depends(get_db)):
     stmt = select(models.Policy).options(selectinload(models.Policy.assigned_nodes))
     result = await db.execute(stmt)
     policies = result.scalars().unique().all()
-    # Corrected: Validate each object in the list
     return [schemas.PolicyResponse.model_validate(p) for p in policies]
 
 
@@ -86,7 +93,6 @@ async def get_policies_for_node(node_id: int, db: AsyncSession = Depends(get_db)
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Node with ID {node_id} not found.",
         )
-    # Corrected: Validate each policy object related to the node
     return [schemas.PolicyResponse.model_validate(p) for p in node.policies]
 
 
@@ -124,13 +130,19 @@ async def assign_policy_to_node(
     if policy not in node.policies:
         node.policies.append(policy)
         await db.commit()
-        await db.refresh(node)
+    
+    # Re-fetch node to ensure all relationships are fresh for validation
+    final_node_stmt = (
+        select(models.Node)
+        .where(models.Node.id == assignment.node_id)
+        .options(selectinload(models.Node.policies))
+    )
+    final_result = await db.execute(final_node_stmt)
+    final_node = final_result.scalar_one()
 
-    # Corrected: Validate the returned Node object
-    return schemas.NodeResponse.model_validate(node)
+    return schemas.NodeResponse.model_validate(final_node)
 
 
-# --- THIS IS THE NEWLY ADDED ENDPOINT ---
 @router.delete(
     "/{policy_id}",
     status_code=status.HTTP_200_OK,
