@@ -1,9 +1,9 @@
-# schemas.py
+# schemas.py (Fully Updated)
 
 from __future__ import annotations
 
 import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -23,10 +23,19 @@ class NodeRegisterRequest(NodeBase):
     pass
 
 
-# THIS IS THE NEW CLASS YOU MUST ADD
 class NodeHeartbeatRequest(BaseModel):
     """Schema for a node sending a heartbeat."""
     hostname: str = Field(..., description="The unique hostname of the node checking in.")
+
+
+# --- THIS IS THE NEW CLASS YOU MUST ADD ---
+class NodeUpdateRequest(BaseModel):
+    """
+    Schema for updating an existing node.
+    All fields are optional, so you can update one or both.
+    """
+    hostname: Optional[str] = Field(None, max_length=255, description="The new unique hostname for the node.")
+    ip_address: Optional[str] = Field(None, max_length=45, description="The new IP address for the node.")
 
 
 class NodeResponse(NodeBase):
