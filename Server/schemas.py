@@ -28,7 +28,6 @@ class NodeHeartbeatRequest(BaseModel):
     hostname: str = Field(..., description="The unique hostname of the node checking in.")
 
 
-# --- THIS IS THE NEW CLASS YOU MUST ADD ---
 class NodeUpdateRequest(BaseModel):
     """
     Schema for updating an existing node.
@@ -100,3 +99,13 @@ class PolicyResponse(PolicyBase):
     assigned_nodes: List[NodeResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
+    
+
+# ==============================================================================
+# Authentication Schemas (NEW)
+# ==============================================================================
+
+class Token(BaseModel):
+    """Schema for the JWT access token response."""
+    access_token: str
+    token_type: str
