@@ -1,4 +1,4 @@
-# token.py
+# login.py (Final Correct Version)
 
 from typing import Annotated
 
@@ -15,11 +15,12 @@ router = APIRouter(
 )
 
 # This is a placeholder for a real database user lookup.
-# In a real app, you would create a User model and query your database.
+# The password has been pre-hashed to avoid cryptographic work at startup.
 FAKE_USERS_DB = {
     "admin": {
         "username": "admin",
-        "hashed_password": auth.hash_password("password123"), # Store a hashed password
+        # This is the pre-hashed string for the password "password123"
+        "hashed_password": "$2b$12$N3ih.sMEysbRP3aKzKpHn.hMOfMNfzJW/VVJZNJ8YjHZ3DlFbvf/.",
         "email": "admin@example.com",
         "full_name": "Admin User",
         "disabled": False,
