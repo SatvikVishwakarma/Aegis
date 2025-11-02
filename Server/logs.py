@@ -14,6 +14,7 @@ import rules
 import schemas
 from auth import get_current_user, verify_api_key
 from db import get_db
+from websocket import manager
 
 router = APIRouter(
     prefix="/logs",
@@ -73,6 +74,13 @@ async def ingest_log(
     db.add(new_event)
     await db.commit()
     await db.refresh(new_event)
+    
+    # Broadcast new event via WebSocket
+    await manager.broadcast({
+        "type": "event_created",
+        "data": schemas.EventResponse.model_validate(new_event).model_dump(),
+        "triggered_rules": triggered_rules
+    })
 
     # 4. Return the comprehensive response
     return EventIngestResponse(

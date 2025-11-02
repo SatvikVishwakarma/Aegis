@@ -1,10 +1,10 @@
-# app.py (Fully Updated with fix)
+# app.py (Fully Updated with WebSocket support)
 
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -15,6 +15,7 @@ import policies
 import login # <-- 1. IMPORT THE RENAMED FILE
 from db import engine
 from models import Base
+from websocket import manager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -87,3 +88,25 @@ class HealthStatus(BaseModel):
 )
 async def health_check() -> HealthStatus:
     return HealthStatus(status="ok")
+
+
+# --- WebSocket Endpoint ---
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    """
+    WebSocket endpoint for real-time updates.
+    Clients connect here to receive live node and event updates.
+    """
+    await manager.connect(websocket)
+    try:
+        while True:
+            # Keep connection alive and receive any client messages
+            data = await websocket.receive_text()
+            # Echo back or handle client messages if needed
+            await manager.send_personal_message(
+                {"type": "pong", "message": "Connection alive"}, 
+                websocket
+            )
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+        logger.info("WebSocket client disconnected")

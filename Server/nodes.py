@@ -1,4 +1,4 @@
-# nodes.py (Fully Updated with Edit and Delete)
+# nodes.py (Fully Updated with Edit, Delete, and WebSocket Broadcasting)
 
 from typing import List
 
@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import models
 import schemas
 from db import get_db
+from websocket import manager
 
 router = APIRouter(
     prefix="/nodes",
@@ -47,6 +48,13 @@ async def register_node(
         existing_node.status = "online"
         await db.commit()
         await db.refresh(existing_node)
+        
+        # Broadcast update via WebSocket
+        await manager.broadcast({
+            "type": "node_updated",
+            "data": schemas.NodeResponse.model_validate(existing_node).model_dump()
+        })
+        
         return schemas.NodeResponse.model_validate(existing_node)
 
     new_node = models.Node(
@@ -57,6 +65,13 @@ async def register_node(
     db.add(new_node)
     await db.commit()
     await db.refresh(new_node)
+    
+    # Broadcast new node via WebSocket
+    await manager.broadcast({
+        "type": "node_created",
+        "data": schemas.NodeResponse.model_validate(new_node).model_dump()
+    })
+    
     return schemas.NodeResponse.model_validate(new_node)
 
 @router.post(
@@ -133,4 +148,11 @@ async def delete_node(node_id: int, db: AsyncSession = Depends(get_db)):
     
     await db.delete(db_node)
     await db.commit()
+    
+    # Broadcast deletion via WebSocket
+    await manager.broadcast({
+        "type": "node_deleted",
+        "data": {"id": node_id}
+    })
+    
     return {"status": "success", "detail": f"Node with ID {node_id} has been deleted"}
