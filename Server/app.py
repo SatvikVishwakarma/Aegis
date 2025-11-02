@@ -12,7 +12,8 @@ from pydantic import BaseModel
 import logs
 import nodes
 import policies
-import login # <-- 1. IMPORT THE RENAMED FILE
+import login
+import users  # User management endpoints
 from db import engine
 from models import Base
 from websocket import manager
@@ -74,7 +75,8 @@ API_V1_PREFIX = "/api/v1"
 app.include_router(nodes.router, prefix=API_V1_PREFIX)
 app.include_router(logs.router, prefix=API_V1_PREFIX)
 app.include_router(policies.router, prefix=API_V1_PREFIX)
-app.include_router(login.router, prefix=API_V1_PREFIX) # <-- 2. INCLUDE THE ROUTER FROM THE RENAMED FILE
+app.include_router(login.router, prefix=API_V1_PREFIX)
+app.include_router(users.router, prefix=API_V1_PREFIX)
 
 
 # --- Health Check Endpoint ---

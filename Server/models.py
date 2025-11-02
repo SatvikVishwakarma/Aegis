@@ -23,6 +23,28 @@ class Base(DeclarativeBase):
     pass
 
 
+class User(Base):
+    """
+    Represents a user account in the system.
+    """
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    username: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
+    full_name: Mapped[str] = mapped_column(String(255), nullable=True)
+    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    disabled: Mapped[bool] = mapped_column(default=False, nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime,
+        server_default=func.now(),
+        nullable=False
+    )
+
+    def __repr__(self) -> str:
+        return f"<User(id={self.id}, username='{self.username}', email='{self.email}')>"
+
+
 # Association Table for the Many-to-Many relationship between Node and Policy
 # This table connects nodes to the policies assigned to them.
 node_policy_association = Table(

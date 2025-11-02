@@ -102,10 +102,39 @@ class PolicyResponse(PolicyBase):
     
 
 # ==============================================================================
-# Authentication Schemas (NEW)
+# Authentication Schemas
 # ==============================================================================
 
 class Token(BaseModel):
     """Schema for the JWT access token response."""
     access_token: str
     token_type: str
+
+
+class UserBase(BaseModel):
+    """Base schema for a User, containing common attributes."""
+    username: str = Field(..., max_length=100, description="The unique username.")
+    email: str = Field(..., max_length=255, description="The user's email address.")
+    full_name: Optional[str] = Field(None, max_length=255, description="The user's full name.")
+
+
+class UserCreate(UserBase):
+    """Schema for creating a new user."""
+    password: str = Field(..., min_length=8, description="The user's password (plain text, will be hashed).")
+
+
+class UserUpdate(BaseModel):
+    """Schema for updating an existing user."""
+    email: Optional[str] = Field(None, max_length=255, description="The new email address.")
+    full_name: Optional[str] = Field(None, max_length=255, description="The new full name.")
+    password: Optional[str] = Field(None, min_length=8, description="The new password (plain text, will be hashed).")
+    disabled: Optional[bool] = Field(None, description="Whether the user account is disabled.")
+
+
+class UserResponse(UserBase):
+    """Schema for representing a User in API responses."""
+    id: int
+    disabled: bool
+    created_at: datetime.datetime
+
+    model_config = ConfigDict(from_attributes=True)

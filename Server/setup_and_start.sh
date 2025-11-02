@@ -25,12 +25,22 @@ echo "✓ Dependencies installed successfully"
 echo ""
 
 # Step 3: Show installed packages
-echo "[Step 3/4] Installed packages:"
+echo "[Step 3/5] Installed packages:"
 pip list
 echo ""
 
-# Step 4: Start the server
-echo "[Step 4/4] Starting Aegis server on port 8000..."
+# Step 4: Initialize database
+echo "[Step 4/5] Initializing database..."
+python init_db.py
+echo ""
+
+# Step 5: Start the server
+echo "[Step 4/5] Initializing database..."
+python init_db.py
+echo ""
+
+# Step 5: Start the server
+echo "[Step 5/5] Starting Aegis server on port 8000..."
 echo "=========================================="
 echo "Server will be available at:"
 echo "  - API: http://localhost:8000"
