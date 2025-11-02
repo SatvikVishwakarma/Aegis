@@ -10,7 +10,7 @@ import getpass
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from db import async_session_maker
+from db import AsyncSessionLocal
 from models import User
 import auth
 
@@ -42,7 +42,7 @@ async def create_user():
         print("❌ Password must be at least 8 characters")
         return
     
-    async with async_session_maker() as session:
+    async with AsyncSessionLocal() as session:
         # Check if username exists
         result = await session.execute(
             select(User).where(User.username == username)
@@ -79,7 +79,7 @@ async def list_users():
     """List all users."""
     print("\n=== User List ===\n")
     
-    async with async_session_maker() as session:
+    async with AsyncSessionLocal() as session:
         result = await session.execute(select(User))
         users = result.scalars().all()
         
@@ -105,7 +105,7 @@ async def change_password():
         print("❌ Username cannot be empty")
         return
     
-    async with async_session_maker() as session:
+    async with AsyncSessionLocal() as session:
         result = await session.execute(
             select(User).where(User.username == username)
         )
@@ -141,7 +141,7 @@ async def toggle_user_status():
         print("❌ Username cannot be empty")
         return
     
-    async with async_session_maker() as session:
+    async with AsyncSessionLocal() as session:
         result = await session.execute(
             select(User).where(User.username == username)
         )
@@ -180,7 +180,7 @@ async def delete_user():
         print("❌ Cannot delete the admin user")
         return
     
-    async with async_session_maker() as session:
+    async with AsyncSessionLocal() as session:
         result = await session.execute(
             select(User).where(User.username == username)
         )

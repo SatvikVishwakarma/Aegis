@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 # Import from local modules
-from db import engine, async_session_maker
+from db import engine, AsyncSessionLocal
 from models import Base, User
 import auth
 
@@ -25,7 +25,7 @@ async def init_database():
 
 async def create_default_admin():
     """Create a default admin user if no users exist."""
-    async with async_session_maker() as session:
+    async with AsyncSessionLocal() as session:
         # Check if any users exist
         result = await session.execute(select(User))
         existing_users = result.scalars().all()
