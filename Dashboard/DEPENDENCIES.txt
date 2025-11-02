@@ -1,0 +1,71 @@
+# Dashboard Dependencies
+
+## Core Framework
+- **next** (^14.0.4) - React framework with App Router for production-ready applications
+- **react** (^18.2.0) - JavaScript library for building user interfaces
+- **react-dom** (^18.2.0) - React package for working with the DOM
+- **typescript** (^5.3.3) - TypeScript language for type-safe development
+
+## Styling
+- **tailwindcss** (^3.4.0) - Utility-first CSS framework
+- **autoprefixer** (^10.4.16) - PostCSS plugin to parse CSS and add vendor prefixes
+- **postcss** (^8.4.32) - Tool for transforming CSS with JavaScript
+- **clsx** (^2.1.0) - Utility for constructing className strings conditionally
+- **tailwind-merge** (^2.2.0) - Merge Tailwind CSS classes without style conflicts
+- **class-variance-authority** (^0.7.0) - CVA for creating variant-based component APIs
+
+## Animation
+- **framer-motion** (^10.16.16) - Production-ready motion library for React
+
+## Data Fetching & State Management
+- **@tanstack/react-query** (^5.17.0) - Powerful data synchronization for React
+- **axios** (^1.6.5) - Promise-based HTTP client
+- **zustand** (^4.4.7) - Small, fast state management solution
+
+## UI Components & Icons
+- **lucide-react** (^0.303.0) - Beautiful & consistent icon toolkit
+- **cmdk** (^0.2.0) - Command menu component for React
+
+## Data Visualization
+- **recharts** (^2.10.3) - Composable charting library built on React components
+
+## Code Editing
+- **@monaco-editor/react** (^4.6.0) - Monaco Editor (VS Code's editor) for React
+- **react-syntax-highlighter** (^15.5.0) - Syntax highlighting component for React
+- **@types/react-syntax-highlighter** (^15.5.11) - TypeScript definitions
+
+## Utilities
+- **fuse.js** (^7.0.0) - Lightweight fuzzy-search library
+- **date-fns** (^3.0.6) - Modern JavaScript date utility library
+- **react-hot-toast** (^2.4.1) - Smoking hot React notifications
+
+## Development Dependencies
+- **@types/node** (^20.19.24) - TypeScript definitions for Node.js
+- **@types/react** (^18.2.46) - TypeScript definitions for React
+- **@types/react-dom** (^18.2.18) - TypeScript definitions for React DOM
+- **eslint** (^8.56.0) - JavaScript linter
+- **eslint-config-next** (^14.0.4) - ESLint configuration for Next.js
+
+## Installation
+
+```bash
+npm install
+```
+
+## Usage
+
+### Development
+```bash
+npm run dev
+```
+
+### Production Build
+```bash
+npm run build
+npm start
+```
+
+### Linting
+```bash
+npm run lint
+```
