@@ -14,6 +14,8 @@ Aegis is a comprehensive security monitoring platform featuring a modern FastAPI
 ## Table of Contents
 
 - [Features](#features)
+- [Quick Start](#quick-start)
+- [User Management](#user-management)
 - [Architecture](#architecture)
 - [API Documentation](#api-documentation)
 - [Deployment](#deployment)
@@ -93,6 +95,161 @@ Aegis is a comprehensive security monitoring platform featuring a modern FastAPI
 - Persistent sessions with localStorage
 - Keyboard navigation and accessibility
 
+---
+
+## Quick Start
+
+### Prerequisites
+- Python 3.9 or higher
+- Node.js 18 or higher
+- npm or yarn
+
+### Automated Setup (Recommended)
+
+**Step 1: Clone the repository**
+```bash
+git clone https://github.com/SatvikVishwakarma/Aegis.git
+cd Aegis
+```
+
+**Step 2: Start the backend**
+```bash
+cd Server
+chmod +x setup_and_start.sh
+./setup_and_start.sh
+```
+
+This will automatically:
+- Create a virtual environment
+- Install all Python dependencies
+- Initialize the database
+- Create a default admin user (username: `admin`, password: `password123`)
+- Start the server on port 8000
+
+**Step 3: Start the dashboard** (in a new terminal)
+```bash
+cd Dashboard
+chmod +x setup_and_start.sh
+./setup_and_start.sh
+```
+
+This will:
+- Install all Node.js dependencies
+- Start the development server on port 3000
+
+**Step 4: Access the dashboard**
+- Open http://localhost:3000
+- Login with username: `admin`, password: `password123`
+- **IMPORTANT:** Change the default password immediately!
+
+---
+
+## User Management
+
+Aegis includes a complete database-backed user management system. No hardcoded credentials!
+
+### Initial Setup
+
+When you first run the server setup script, it automatically creates:
+- All database tables (users, nodes, policies, events)
+- A default admin user with credentials: `admin` / `password123`
+
+**Security Warning:** Always change the default password immediately after first login!
+
+### Managing Users
+
+#### Using the CLI Tool (Recommended)
+
+**Step 1: Activate the virtual environment**
+```bash
+cd Server
+source aegis/bin/activate  # Linux/Mac
+# OR
+aegis\Scripts\activate     # Windows
+```
+
+**Step 2: Run the user management tool**
+```bash
+python manage_users.py
+```
+
+**Available Options:**
+1. **Create User** - Add new user accounts
+2. **List Users** - View all users in the system
+3. **Change Password** - Update user passwords (including admin)
+4. **Enable/Disable User** - Activate or deactivate accounts
+5. **Delete User** - Remove users (admin cannot be deleted)
+
+**Example: Create a new user**
+```bash
+python manage_users.py
+# Select: 1. Create User
+# Username: john
+# Email: john@example.com
+# Full Name: John Doe
+# Password: [secure password]
+```
+
+**Example: Change admin password**
+```bash
+python manage_users.py
+# Select: 3. Change Password
+# Username: admin
+# New Password: [your secure password]
+```
+
+#### Using the API
+
+**Create a user via API:**
+```bash
+POST /api/v1/users
+Content-Type: application/json
+
+{
+  "username": "john",
+  "email": "john@example.com",
+  "full_name": "John Doe",
+  "password": "securepassword123"
+}
+```
+
+**List all users:**
+```bash
+GET /api/v1/users
+```
+
+**Update user:**
+```bash
+PUT /api/v1/users/{user_id}
+Content-Type: application/json
+
+{
+  "email": "newemail@example.com",
+  "password": "newpassword123"
+}
+```
+
+**Delete user:**
+```bash
+DELETE /api/v1/users/{user_id}
+```
+
+### User Database
+
+Users are stored in the SQLite database at `Server/security_monitor.db` with:
+- Bcrypt hashed passwords (never stored in plain text)
+- Unique usernames and emails
+- Account enable/disable status
+- Creation timestamps
+
+**Backup Recommendation:**
+```bash
+cp Server/security_monitor.db Server/security_monitor.db.backup
+```
+
+For detailed user management documentation, see [USER_MANAGEMENT.md](USER_MANAGEMENT.md).
+
+---
 
 ## Architecture
 
@@ -105,12 +262,15 @@ Server/
 ├── nodes.py            # Node management endpoints
 ├── logs.py             # Event/log endpoints with broadcasting
 ├── policies.py         # Policy management endpoints
+├── users.py            # User management endpoints (NEW)
 ├── login.py            # User authentication
 ├── auth.py             # JWT token utilities
-├── models.py           # SQLAlchemy database models
+├── models.py           # SQLAlchemy database models (includes User model)
 ├── schemas.py          # Pydantic validation schemas
 ├── rules.py            # Rule engine for policy evaluation
-└── db.py               # Database connection & session management
+├── db.py               # Database connection & session management
+├── init_db.py          # Database initialization script (NEW)
+└── manage_users.py     # CLI tool for user management (NEW)
 ```
 
 **Key Technologies:**
@@ -181,11 +341,40 @@ User Action → Dashboard → API Request → Backend → Database
 
 ### Authentication
 
-**POST** `/api/v1/token`
+**POST** `/api/v1/token` - Login and get JWT token
 ```json
 {
   "username": "admin",
   "password": "password123"
+}
+```
+
+**Response:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer"
+}
+```
+
+### Users
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/users` | Create a new user |
+| GET | `/api/v1/users` | List all users |
+| GET | `/api/v1/users/{user_id}` | Get user details |
+| PUT | `/api/v1/users/{user_id}` | Update user |
+| DELETE | `/api/v1/users/{user_id}` | Delete user |
+
+**Create User Example:**
+```json
+POST /api/v1/users
+{
+  "username": "john",
+  "email": "john@example.com",
+  "full_name": "John Doe",
+  "password": "securepassword123"
 }
 ```
 
@@ -214,6 +403,14 @@ User Action → Dashboard → API Request → Backend → Database
 | GET | `/api/v1/logs` | List events with filters |
 | POST | `/api/v1/logs/ingest` | Ingest a new event |
 
+### WebSocket
+
+**WS** `/ws` - Real-time updates
+- Broadcasts: `node_created`, `node_updated`, `node_deleted`, `event_created`
+
+**Interactive API Documentation:** http://localhost:8000/docs
+
+---
 
 ## Deployment
 
@@ -246,10 +443,20 @@ cd Aegis
 # Setup backend
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirments.txt
+pip install -r Server/requirments.txt
+
+# Initialize database and create admin user
+cd Server
+python init_db.py
+
+# Change admin password (IMPORTANT!)
+python manage_users.py
+# Select option 3: Change Password
+# Username: admin
+# Set a strong password
 
 # Setup frontend
-cd Dashboard
+cd ../Dashboard
 npm install
 npm run build
 ```
@@ -350,11 +557,12 @@ sudo ufw enable
 # Check Python version
 python3 --version  # Should be 3.9+
 
-# Reinstall dependencies
+# Reinstall dependencies (from Server directory)
+cd Server
 pip install -r requirments.txt --force-reinstall
 
 # Check logs
-python Server/app.py
+python app.py
 ```
 
 ### Frontend Issues
@@ -412,4 +620,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 For issues or questions:
 - Open an issue on GitHub
 - Check the [API documentation](http://localhost:8000/docs)
-- Review the Quick Start guide above
+- Review the [User Management Guide](USER_MANAGEMENT.md)
+- See the Quick Start guide above
+
+---
+
+**Enjoy monitoring your infrastructure with Aegis!**

@@ -17,10 +17,10 @@ echo "✓ Virtual environment created successfully"
 echo ""
 
 # Step 2: Activate virtual environment and install dependencies
-echo "[Step 2/4] Installing dependencies from requirments.txt..."
+echo "[Step 2/5] Installing dependencies from requirments.txt..."
 source aegis/bin/activate
 pip install --upgrade pip
-pip install -r ../requirments.txt
+pip install -r requirments.txt
 echo "✓ Dependencies installed successfully"
 echo ""
 
@@ -30,11 +30,6 @@ pip list
 echo ""
 
 # Step 4: Initialize database
-echo "[Step 4/5] Initializing database..."
-python init_db.py
-echo ""
-
-# Step 5: Start the server
 echo "[Step 4/5] Initializing database..."
 python init_db.py
 echo ""

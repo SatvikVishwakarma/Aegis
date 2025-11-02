@@ -3,7 +3,7 @@ uvicorn[standard]
 sqlalchemy[asyncio]  
 aiosqlite  
 pydantic  
-passlib[bcrypt]  
+bcrypt  
 python-jose[cryptography]  
 python-dotenv  
 requests  

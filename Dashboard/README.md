@@ -71,7 +71,7 @@ A next-generation security dashboard with an intuitive, high-performance, and vi
 
 3. **Install Python dependencies**:
    ```bash
-   pip install -r ../requirments.txt
+   pip install -r requirments.txt
    ```
 
 4. **Run the FastAPI server**:
