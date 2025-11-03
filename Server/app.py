@@ -6,7 +6,6 @@ from typing import AsyncGenerator
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel
 
 # --- Corrected Project-specific Imports ---
@@ -18,7 +17,6 @@ import users  # User management endpoints
 from db import engine
 from models import Base
 from websocket import manager
-from security import security_middleware
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -69,9 +67,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Add security middleware to restrict access to dashboard only
-app.add_middleware(BaseHTTPMiddleware, dispatch=security_middleware)
 
 
 # --- API Routers ---
