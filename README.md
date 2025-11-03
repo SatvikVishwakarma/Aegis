@@ -206,65 +206,59 @@ source aegis/bin/activate  # Linux/Mac
 aegis\Scripts\activate     # Windows
 ```
 
-**Step 2: Run the user management tool**
+**Step 2: Initialize the database**
 ```bash
-python manage_users.py
+python database_setup.py
 ```
 
-**Available Options:**
-1. **Create User** - Add additional admin accounts (not recommended)
-2. **List Users** - View all users in the system
-3. **Change Password** - Update user passwords (including admin)
-4. **Enable/Disable User** - Activate or deactivate accounts
-5. **Delete User** - Remove users (admin cannot be deleted)
+This will:
+1. Create all database tables
+2. Generate an admin account with a secure random password
+3. Display the admin credentials (save them immediately!)
 
-**Example: Create a new user**
+**Admin Account:**
+- Username: `admin`
+- Password: Auto-generated 10-character alphanumeric string (displayed once)
+- Email: `admin@aegis.local`
+
+**⚠️ Important:** Save the password when displayed - it will not be shown again!
+
+### Password Management
+
+The admin password is used for:
+- Dashboard login
+- Confirming deletion of nodes and policies
+
+**To reset the admin password:**
+1. Delete the database file: `rm aegis.db`
+2. Run initialization again: `python database_setup.py`
+3. Save the new password
+
+### Authentication Flow
+
+**Login to dashboard:**
+1. Navigate to `http://localhost:3000`
+2. Enter username: `admin`
+3. Enter the auto-generated password
+4. Receive JWT token stored in localStorage
+5. All subsequent requests include the token
+
+**API authentication:**
 ```bash
-python manage_users.py
-# Select: 1. Create User
-# Username: john
-# Email: john@example.com
-# Full Name: John Doe
-# Password: [secure password]
-```
+# Login
+curl -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=admin&password=YourPassword123"
 
-**Example: Change admin password**
-```bash
-python manage_users.py
-# Select: 3. Change Password
-# Username: admin
-# New Password: [your secure password]
-```
-
-#### Using the API
-
-**Create a user via API:**
-```bash
-POST /api/v1/users
-Content-Type: application/json
-
+# Response
 {
-  "username": "john",
-  "email": "john@example.com",
-  "full_name": "John Doe",
-  "password": "securepassword123"
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer"
 }
-```
 
-**List all users:**
-```bash
-GET /api/v1/users
-```
-
-**Update user:**
-```bash
-PUT /api/v1/users/{user_id}
-Content-Type: application/json
-
-{
-  "email": "newemail@example.com",
-  "password": "newpassword123"
-}
+# Use token in subsequent requests
+curl -X GET http://localhost:8000/api/v1/nodes \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
 **Delete user:**
@@ -297,18 +291,18 @@ For detailed user management documentation, see [USER_MANAGEMENT.md](USER_MANAGE
 Server/
 ├── app.py              # FastAPI main application & WebSocket endpoint
 ├── websocket.py        # WebSocket connection manager
+├── authentication.py   # Password hashing & JWT token management
+├── auth_routes.py      # Authentication endpoints (/auth/login, /auth/verify)
+├── database_setup.py   # Database initialization & admin account creation
 ├── nodes.py            # Node management endpoints
 ├── logs.py             # Event/log endpoints with broadcasting
 ├── policies.py         # Policy management endpoints
-├── users.py            # User management endpoints (NEW)
-├── login.py            # User authentication
-├── auth.py             # JWT token utilities
-├── models.py           # SQLAlchemy database models (includes User model)
+├── models.py           # SQLAlchemy database models (User, Node, Policy, Event)
 ├── schemas.py          # Pydantic validation schemas
 ├── rules.py            # Rule engine for policy evaluation
 ├── db.py               # Database connection & session management
-├── init_db.py          # Database initialization script (NEW)
-└── manage_users.py     # CLI tool for user management (NEW)
+├── .env.example        # Environment variables template
+└── setup_and_start.sh  # Automated setup script
 ```
 
 **Key Technologies:**
@@ -379,11 +373,11 @@ User Action → Dashboard → API Request → Backend → Database
 
 ### Authentication
 
-**POST** `/api/v1/token` - Login and get JWT token
+**POST** `/api/v1/auth/login` - Login and get JWT token
 ```json
 {
   "username": "admin",
-  "password": "password123"
+  "password": "your_generated_password"
 }
 ```
 
@@ -395,25 +389,9 @@ User Action → Dashboard → API Request → Backend → Database
 }
 ```
 
-### Users
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/v1/users` | Create a new user |
-| GET | `/api/v1/users` | List all users |
-| GET | `/api/v1/users/{user_id}` | Get user details |
-| PUT | `/api/v1/users/{user_id}` | Update user |
-| DELETE | `/api/v1/users/{user_id}` | Delete user |
-
-**Create User Example:**
-```json
-POST /api/v1/users
-{
-  "username": "john",
-  "email": "john@example.com",
-  "full_name": "John Doe",
-  "password": "securepassword123"
-}
+**GET** `/api/v1/auth/verify` - Verify current token
+```
+Authorization: Bearer <token>
 ```
 
 ### Nodes
@@ -478,26 +456,29 @@ sudo apt install git -y
 git clone https://github.com/SatvikVishwakarma/Aegis.git
 cd Aegis
 
+# Quick setup with automated script (RECOMMENDED)
+cd Server
+chmod +x setup_and_start.sh
+./setup_and_start.sh
+# Save the auto-generated admin password!
+
+# OR manual setup:
 # Setup backend
-python3 -m venv venv
-source venv/bin/activate
-pip install -r Server/requirments.txt
+python3 -m venv aegis
+source aegis/bin/activate
+pip install -r requirments.txt
 
 # Initialize database and create admin user
-cd Server
-python init_db.py
-
-# Change admin password (IMPORTANT!)
-python manage_users.py
-# Select option 3: Change Password
-# Username: admin
-# Set a strong password
+python database_setup.py
+# ⚠️ SAVE THE DISPLAYED PASSWORD!
 
 # Setup frontend
 cd ../Dashboard
 npm install
 npm run build
 ```
+
+**⚠️ CRITICAL: Save the admin password displayed during setup!**
 
 #### 3. Create Systemd Services
 
