@@ -1,10 +1,10 @@
-# auth.py (Final Version - No passlib)
+# auth.py - Authentication and Password Management
 
 import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-import bcrypt # <-- USE BCRYPT DIRECTLY
+import bcrypt
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
@@ -28,21 +28,51 @@ if not AGENT_API_KEY:
     raise ValueError("AGENT_API_KEY environment variable not set. Agent authentication will fail.")
 
 # ==============================================================================
-# Password Hashing (Using bcrypt directly)
+# Password Hashing (Using bcrypt)
 # ==============================================================================
 
 def hash_password(password: str) -> str:
-    """Hashes a plain-text password using bcrypt."""
+    """
+    Hashes a plain-text password using bcrypt.
+    Always generates a new salt for each password.
+    Returns a string that can be stored in the database.
+    """
+    # Convert password to bytes
     password_bytes = password.encode('utf-8')
-    salt = bcrypt.gensalt()
-    hashed_bytes = bcrypt.hashpw(password_bytes, salt)
-    return hashed_bytes.decode('utf-8')
+    
+    # Generate salt and hash (bcrypt handles salt automatically)
+    salt = bcrypt.gensalt(rounds=12)  # 12 rounds is a good balance of security and speed
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    
+    # Return as string for database storage
+    return hashed.decode('utf-8')
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verifies a plain-text password against a hashed password."""
-    plain_password_bytes = plain_password.encode('utf-8')
-    hashed_password_bytes = hashed_password.encode('utf-8')
-    return bcrypt.checkpw(plain_password_bytes, hashed_password_bytes)
+    """
+    Verifies a plain-text password against a bcrypt hashed password.
+    Returns True if password matches, False otherwise.
+    
+    Args:
+        plain_password: The password provided by the user (plain text)
+        hashed_password: The hashed password from the database
+    
+    Returns:
+        bool: True if password is correct, False otherwise
+    """
+    try:
+        # Convert both to bytes
+        plain_bytes = plain_password.encode('utf-8')
+        hashed_bytes = hashed_password.encode('utf-8')
+        
+        # Use bcrypt to check password
+        result = bcrypt.checkpw(plain_bytes, hashed_bytes)
+        
+        return result
+    except Exception as e:
+        # If any error occurs during verification, treat as invalid password
+        print(f"Password verification error: {e}")
+        return False
 
 # ==============================================================================
 # API Key Authentication (for Agents/Nodes)

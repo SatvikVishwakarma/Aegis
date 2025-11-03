@@ -1,4 +1,4 @@
-# nodes.py (Fully Updated with Edit, Delete, and WebSocket Broadcasting)
+# nodes.py (With Password Confirmation for Deletions)
 
 from typing import List
 
@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import models
 import schemas
+import auth
 from db import get_db
 from websocket import manager
 
@@ -140,11 +141,40 @@ async def update_node(
     summary="Delete a Node by ID",
     response_model=dict,
 )
-async def delete_node(node_id: int, db: AsyncSession = Depends(get_db)):
-    """ Finds a node by its unique ID and deletes it from the database. """
+async def delete_node(
+    node_id: int,
+    delete_request: schemas.DeleteConfirmation,
+    db: AsyncSession = Depends(get_db)
+):
+    """ 
+    Deletes a node by its unique ID.
+    Requires admin password confirmation to prevent accidental deletions.
+    """
+    # Verify admin password
+    result = await db.execute(
+        select(models.User).where(models.User.username == "admin")
+    )
+    admin_user = result.scalar_one_or_none()
+    
+    if not admin_user:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Admin user not found"
+        )
+    
+    if not auth.verify_password(delete_request.password, admin_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid admin password"
+        )
+    
+    # Find and delete the node
     db_node = await db.get(models.Node, node_id)
     if not db_node:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Node not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Node not found"
+        )
     
     await db.delete(db_node)
     await db.commit()

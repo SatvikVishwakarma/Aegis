@@ -138,3 +138,12 @@ class UserResponse(UserBase):
     created_at: datetime.datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# ==============================================================================
+# Delete Confirmation Schema
+# ==============================================================================
+
+class DeleteConfirmation(BaseModel):
+    """Schema for confirming deletions with admin password."""
+    password: str = Field(..., description="Admin password for confirming the deletion.")

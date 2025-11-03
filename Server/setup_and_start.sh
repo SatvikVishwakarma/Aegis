@@ -69,43 +69,52 @@ echo ""
 
 # Step 5: Initialize database
 echo "[Step 5/6] Initializing database..."
-python init_db.py
-echo ""
 
-# Step 6: User Management (Mandatory)
-echo "[Step 6/7] User Account Creation"
-echo "=========================================="
-echo "No default users exist. You must create at least one user account."
-echo "This will be your admin/login account for the dashboard."
-echo ""
-echo "Opening user management..."
-echo ""
-python manage_users.py
+# Remove old database if it exists to start fresh
+if [ -f aegis.db ]; then
+    echo "  Removing old database file..."
+    rm -f aegis.db
+fi
 
-# Check if at least one user was created
-USER_COUNT=$(python -c "
-import asyncio
-from sqlalchemy import select, func
-from db import AsyncSessionLocal
-from models import User
+# Run init_db.py and capture the admin password
+INIT_OUTPUT=$(python init_db.py)
+echo "$INIT_OUTPUT"
 
-async def count_users():
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(select(func.count(User.id)))
-        return result.scalar()
+# Extract the password from output
+ADMIN_PASSWORD=$(echo "$INIT_OUTPUT" | grep "Password:" | awk '{print $2}')
 
-print(asyncio.run(count_users()))
-")
-
-if [ "$USER_COUNT" -eq "0" ]; then
-    echo ""
-    echo "❌ ERROR: No users created. At least one user is required to login."
-    echo "Please run the script again and create a user account."
-    exit 1
+# Ensure database has correct permissions
+if [ -f aegis.db ]; then
+    chmod 664 aegis.db
+    echo "✓ Database permissions set correctly"
 fi
 
 echo ""
-echo "✓ User account(s) created successfully"
+
+# Step 6: User Management (Mandatory)
+echo "[Step 6/7] Admin Account Created"
+echo "=========================================="
+
+if [ -n "$ADMIN_PASSWORD" ]; then
+    echo ""
+    echo "🔐 YOUR ADMIN CREDENTIALS:"
+    echo "=========================================="
+    echo "  Username: admin"
+    echo "  Password: $ADMIN_PASSWORD"
+    echo "=========================================="
+    echo ""
+    echo "⚠️  IMPORTANT - SAVE THIS PASSWORD NOW!"
+    echo "  - Write it down or save it in a password manager"
+    echo "  - You'll need this to:"
+    echo "    * Login to the dashboard"
+    echo "    * Confirm deletion of nodes and policies"
+    echo "  - This password will NOT be shown again!"
+    echo ""
+    read -p "Press Enter once you have saved the password..."
+else
+    echo "Admin user already exists from previous setup"
+fi
+
 echo ""
 
 # Step 7: Start the server

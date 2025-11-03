@@ -1,4 +1,4 @@
-# policies.py (Fully Updated with MissingGreenlet fix)
+# policies.py (With Password Confirmation for Deletions)
 
 from typing import List
 
@@ -10,6 +10,7 @@ from sqlalchemy.orm import selectinload
 
 import models
 import schemas
+import auth
 from db import get_db
 
 router = APIRouter(
@@ -149,8 +150,34 @@ async def assign_policy_to_node(
     summary="Delete a Policy by ID",
     response_model=dict,
 )
-async def delete_policy(policy_id: int, db: AsyncSession = Depends(get_db)):
-    """ Finds a policy by its unique ID and deletes it from the database. """
+async def delete_policy(
+    policy_id: int,
+    delete_request: schemas.DeleteConfirmation,
+    db: AsyncSession = Depends(get_db)
+):
+    """ 
+    Deletes a policy by its unique ID.
+    Requires admin password confirmation to prevent accidental deletions.
+    """
+    # Verify admin password
+    result = await db.execute(
+        select(models.User).where(models.User.username == "admin")
+    )
+    admin_user = result.scalar_one_or_none()
+    
+    if not admin_user:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Admin user not found"
+        )
+    
+    if not auth.verify_password(delete_request.password, admin_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid admin password"
+        )
+    
+    # Find and delete the policy
     policy_to_delete = await db.get(models.Policy, policy_id)
 
     if not policy_to_delete:
