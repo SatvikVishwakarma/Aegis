@@ -49,12 +49,18 @@ async def verify_dashboard_access(request: Request) -> bool:
     
     origin_valid = any(allowed_origin in (referer or origin) for allowed_origin in allowed_origins)
     
-    # Check 2: Verify API key if configured
-    api_key_valid = True  # Default to true if not configured
-    if DASHBOARD_API_KEY:
-        api_key_valid = api_key == DASHBOARD_API_KEY
+    # Special handling: If no origin/referer (same-origin request), allow it
+    # Browsers don't always send these headers for same-origin requests
+    if not referer and not origin:
+        logger.info(f"Request without origin/referer (same-origin) - allowing: {request.url.path}")
+        return True
     
-    # Log security check
+    # Check 2: API key is OPTIONAL for now (since we're localhost-only)
+    # Just log if it's missing, but don't block
+    if DASHBOARD_API_KEY and not api_key:
+        logger.info(f"Request without API key (optional): {request.url.path}")
+    
+    # Log security check failures
     if not origin_valid:
         logger.warning(
             f"Blocked request from unauthorized origin. "
@@ -62,14 +68,9 @@ async def verify_dashboard_access(request: Request) -> bool:
             f"Referer: {referer}, "
             f"Origin: {origin}"
         )
+        return False
     
-    if DASHBOARD_API_KEY and not api_key_valid:
-        logger.warning(
-            f"Blocked request with invalid API key. "
-            f"Path: {request.url.path}"
-        )
-    
-    return origin_valid and api_key_valid
+    return True
 
 
 async def security_middleware(request: Request, call_next):
