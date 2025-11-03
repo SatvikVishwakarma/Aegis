@@ -16,7 +16,7 @@ from models import Base
 # --- Database Configuration ---
 
 # Use an environment variable for the database file, with a sensible default.
-DATABASE_FILE = os.getenv("DATABASE_FILE", "security_monitor.db")
+DATABASE_FILE = os.getenv("DATABASE_FILE", "aegis.db")
 SQLALCHEMY_DATABASE_URL = f"sqlite+aiosqlite:///./{DATABASE_FILE}"
 
 # --- SQLAlchemy Engine and Session Setup ---
