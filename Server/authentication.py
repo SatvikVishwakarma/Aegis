@@ -12,6 +12,10 @@ from typing import Optional
 import bcrypt
 from jose import jwt, JWTError
 from dotenv import load_dotenv
+from fastapi import Depends, HTTPException, Header, status
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 load_dotenv()
 
@@ -19,6 +23,10 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY", "")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+AGENT_API_KEY = os.getenv("AGENT_API_KEY", "")
+
+# OAuth2 scheme for JWT token authentication
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 def generate_password(length: int = 10) -> str:
@@ -109,3 +117,81 @@ def decode_access_token(token: str) -> Optional[dict]:
         return payload
     except JWTError:
         return None
+
+
+# ==============================================================================
+# FastAPI Dependencies for Authentication
+# ==============================================================================
+
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: AsyncSession = None
+) -> dict:
+    """
+    Validate JWT token and return current user data.
+    Used as a FastAPI dependency for protected dashboard endpoints.
+    
+    Args:
+        token: JWT token from Authorization header
+        db: Database session (optional, for future user validation)
+        
+    Returns:
+        User data from token
+        
+    Raises:
+        HTTPException: If token is invalid or expired
+    """
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    
+    payload = decode_access_token(token)
+    if payload is None:
+        raise credentials_exception
+    
+    username: str = payload.get("sub")
+    if username is None:
+        raise credentials_exception
+    
+    return {
+        "username": username,
+        "user_id": payload.get("user_id"),
+        "email": payload.get("email")
+    }
+
+
+async def verify_api_key(x_api_key: Optional[str] = Header(None)) -> bool:
+    """
+    Verify agent API key for log ingestion endpoints.
+    Used as a FastAPI dependency for agent/node authentication.
+    
+    Args:
+        x_api_key: API key from X-API-Key header
+        
+    Returns:
+        True if API key is valid
+        
+    Raises:
+        HTTPException: If API key is missing or invalid
+    """
+    if not AGENT_API_KEY:
+        # If no API key is configured, allow access (development mode)
+        return True
+    
+    if x_api_key is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="API key required",
+            headers={"WWW-Authenticate": "ApiKey"},
+        )
+    
+    if x_api_key != AGENT_API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid API key",
+            headers={"WWW-Authenticate": "ApiKey"},
+        )
+    
+    return True

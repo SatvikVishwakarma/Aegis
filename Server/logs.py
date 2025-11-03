@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import models
 import rules
 import schemas
-from auth import get_current_user, verify_api_key
+from authentication import get_current_user, verify_api_key
 from db import get_db
 from websocket import manager
 
