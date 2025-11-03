@@ -82,8 +82,8 @@ if [ -f aegis.db ]; then
     rm -f aegis.db
 fi
 
-# Run init_db.py and capture the admin password
-INIT_OUTPUT=$(python init_db.py)
+# Run database_setup.py and capture the admin password
+INIT_OUTPUT=$(python database_setup.py)
 echo "$INIT_OUTPUT"
 
 # Extract the password from output

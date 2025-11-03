@@ -12,8 +12,7 @@ from pydantic import BaseModel
 import logs
 import nodes
 import policies
-import login
-import users  # User management endpoints
+import auth_routes  # NEW authentication
 from db import engine
 from models import Base
 from websocket import manager
@@ -75,8 +74,7 @@ API_V1_PREFIX = "/api/v1"
 app.include_router(nodes.router, prefix=API_V1_PREFIX)
 app.include_router(logs.router, prefix=API_V1_PREFIX)
 app.include_router(policies.router, prefix=API_V1_PREFIX)
-app.include_router(login.router, prefix=API_V1_PREFIX)
-app.include_router(users.router, prefix=API_V1_PREFIX)
+app.include_router(auth_routes.router, prefix=API_V1_PREFIX)  # NEW authentication
 
 
 # --- Health Check Endpoint ---

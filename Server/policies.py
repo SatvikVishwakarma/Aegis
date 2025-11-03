@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 
 import models
 import schemas
-import auth
+import authentication
 from db import get_db
 
 router = APIRouter(
@@ -171,7 +171,7 @@ async def delete_policy(
             detail="Admin user not found"
         )
     
-    if not auth.verify_password(delete_request.password, admin_user.hashed_password):
+    if not authentication.verify_password(delete_request.password, admin_user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid admin password"
