@@ -119,7 +119,7 @@ A next-generation security dashboard with an intuitive, high-performance, and vi
 ### API Endpoints
 
 #### Authentication
-- `POST /api/v1/token` - Login and get JWT token
+- `POST /api/v1/auth/login` - Login and get JWT token
 
 #### Nodes
 - `GET /api/v1/nodes` - List all nodes
@@ -184,14 +184,16 @@ A next-generation security dashboard with an intuitive, high-performance, and vi
 Aegis/
 ├── Server/                 # FastAPI Backend
 │   ├── app.py             # Main application
-│   ├── auth.py            # Authentication logic
+│   ├── authentication.py  # Password hashing & JWT
+│   ├── auth_routes.py     # Login endpoint (/auth/login)
+│   ├── database_setup.py  # Database initialization
 │   ├── models.py          # Database models
 │   ├── schemas.py         # Pydantic schemas
 │   ├── nodes.py           # Nodes endpoints
 │   ├── policies.py        # Policies endpoints
 │   ├── logs.py            # Events/logs endpoints
-│   ├── login.py           # Login endpoint
 │   ├── rules.py           # Rule evaluation
+│   ├── websocket.py       # WebSocket manager
 │   └── db.py              # Database connection
 │
 └── Dashboard/             # Next.js Frontend
