@@ -25,20 +25,25 @@ export default function PoliciesPage() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: deletePolicy,
+    mutationFn: ({ id, password }: { id: number; password: string }) => 
+      deletePolicy(id, password),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['policies'] })
       toast.success('Policy deleted successfully')
     },
-    onError: () => {
-      toast.error('Failed to delete policy')
+    onError: (error: any) => {
+      const message = error.response?.data?.detail || 'Failed to delete policy'
+      toast.error(message)
     },
   })
 
   const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this policy?')) {
-      deleteMutation.mutate(id)
+    const password = prompt('Enter admin password to confirm deletion:')
+    if (!password) {
+      toast.error('Deletion cancelled')
+      return
     }
+    deleteMutation.mutate({ id, password })
   }
 
   return (

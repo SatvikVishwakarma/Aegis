@@ -124,10 +124,11 @@ This will automatically:
 - Create a virtual environment named `aegis`
 - Install all Python dependencies
 - Initialize the database
-- **Prompt you to create your first user account**
+- **Generate a secure 10-character admin password**
+- **Display the admin password (SAVE IT IMMEDIATELY!)**
 - Start the server on port 8000
 
-**Important:** The script generates secure random keys for JWT authentication. If you need to set custom keys, see [Environment Setup Guide](Server/ENVIRONMENT_SETUP.md).
+**⚠️ CRITICAL:** The setup script generates a single admin account with a random password that will only be shown ONCE. You must save it during setup!
 
 **Step 3: Start the dashboard** (in a new terminal)
 ```bash
@@ -142,26 +143,60 @@ This will:
 
 **Step 4: Access the dashboard**
 - Open http://localhost:3000
-- Login with the user account you created during server setup
+- Login with:
+  - **Username:** `admin`
+  - **Password:** (the 10-character password shown during server setup)
 
 ---
 
-## User Management
+## Authentication & Security
 
-Aegis includes a complete database-backed user management system with no default credentials.
+Aegis uses a single admin account system with enhanced security measures.
 
-### Initial Setup
+### Admin Account
 
-When you first run the server setup script (`./setup_and_start.sh`), it:
-1. Creates all database tables (users, nodes, policies, events)
-2. **Opens the user management tool** where you must create your first user account
-3. This account will be your login credentials for the dashboard
+The system creates **one admin account** during initial setup:
+- **Username:** `admin` (fixed)
+- **Password:** 10-character secure random alphanumeric string
+- **Generated during:** First server setup (`./setup_and_start.sh`)
+- **⚠️ Displayed once:** During setup - you MUST save it!
 
-**The setup script requires at least one user to be created before starting the server.**
+### Password Generation
 
-### Managing Users
+The admin password is automatically generated using Python's `secrets` module:
+- **Length:** 10 characters
+- **Character set:** Letters (A-Z, a-z) and digits (0-9)
+- **No special characters:** For easier copying and typing
+- **Cryptographically secure:** Uses `secrets.choice()` for random generation
 
-#### Using the CLI Tool (Recommended)
+### Deletion Protection
+
+To prevent accidental deletions, the system requires password confirmation:
+- **When deleting nodes:** You must enter the admin password
+- **When deleting policies:** You must enter the admin password
+- The backend verifies the password before executing the deletion
+- Invalid passwords return a 401 Unauthorized error
+
+This ensures that only authorized users can perform destructive operations.
+
+### Lost Password Recovery
+
+If you lose the admin password:
+1. Stop the server (`Ctrl+C`)
+2. Delete the database and environment files:
+   ```bash
+   cd Server
+   rm aegis.db .env
+   ```
+3. Run the setup script again: `./setup_and_start.sh`
+4. A new admin account with a new password will be created
+5. **Save the new password immediately!**
+
+**⚠️ Warning:** This will delete all your nodes, policies, and events data!
+
+### Advanced User Management
+
+For advanced users who need to manage the admin account manually:
 
 **Step 1: Activate the virtual environment**
 ```bash
@@ -177,7 +212,7 @@ python manage_users.py
 ```
 
 **Available Options:**
-1. **Create User** - Add new user accounts
+1. **Create User** - Add additional admin accounts (not recommended)
 2. **List Users** - View all users in the system
 3. **Change Password** - Update user passwords (including admin)
 4. **Enable/Disable User** - Activate or deactivate accounts

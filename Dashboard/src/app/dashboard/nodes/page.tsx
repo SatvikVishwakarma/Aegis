@@ -42,20 +42,25 @@ export default function NodesPage() {
   }, [nodes, searchQuery, fuse])
 
   const deleteMutation = useMutation({
-    mutationFn: deleteNode,
+    mutationFn: ({ id, password }: { id: number; password: string }) => 
+      deleteNode(id, password),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['nodes'] })
       toast.success('Node deleted successfully')
     },
-    onError: () => {
-      toast.error('Failed to delete node')
+    onError: (error: any) => {
+      const message = error.response?.data?.detail || 'Failed to delete node'
+      toast.error(message)
     },
   })
 
   const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this node?')) {
-      deleteMutation.mutate(id)
+    const password = prompt('Enter admin password to confirm deletion:')
+    if (!password) {
+      toast.error('Deletion cancelled')
+      return
     }
+    deleteMutation.mutate({ id, password })
   }
 
   return (

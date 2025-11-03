@@ -56,8 +56,10 @@ export const updateNode = async (nodeId: number, data: { hostname?: string; ip_a
   return response.data
 }
 
-export const deleteNode = async (nodeId: number) => {
-  const response = await api.delete(`/nodes/${nodeId}`)
+export const deleteNode = async (nodeId: number, password: string) => {
+  const response = await api.delete(`/nodes/${nodeId}`, {
+    data: { password }
+  })
   return response.data
 }
 
@@ -87,8 +89,10 @@ export const createPolicy = async (data: {
   return response.data
 }
 
-export const deletePolicy = async (policyId: number) => {
-  const response = await api.delete(`/policies/${policyId}`)
+export const deletePolicy = async (policyId: number, password: string) => {
+  const response = await api.delete(`/policies/${policyId}`, {
+    data: { password }
+  })
   return response.data
 }
 
