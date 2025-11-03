@@ -120,11 +120,14 @@ chmod +x setup_and_start.sh
 ```
 
 This will automatically:
-- Create a virtual environment
+- **Create `.env` file with secure random SECRET_KEY and AGENT_API_KEY**
+- Create a virtual environment named `aegis`
 - Install all Python dependencies
 - Initialize the database
 - Create a default admin user (username: `admin`, password: `password123`)
 - Start the server on port 8000
+
+**Important:** The script generates secure random keys for JWT authentication. If you need to set custom keys, see [Environment Setup Guide](Server/ENVIRONMENT_SETUP.md).
 
 **Step 3: Start the dashboard** (in a new terminal)
 ```bash
@@ -549,6 +552,35 @@ sudo ufw enable
 ```
 
 ## Troubleshooting
+
+### Environment Variable Errors
+
+**Error: `ValueError: SECRET_KEY environment variable not set`**
+
+This error means the required environment variables for JWT authentication are missing.
+
+**Solution 1 (Automatic - Recommended):**
+```bash
+cd Server
+./setup_and_start.sh
+```
+The script will automatically create a `.env` file with secure random keys.
+
+**Solution 2 (Manual):**
+```bash
+cd Server
+
+# Generate secure random keys
+python3 -c "import secrets; print('SECRET_KEY=' + secrets.token_urlsafe(32))" >> .env
+python3 -c "import secrets; print('AGENT_API_KEY=' + secrets.token_urlsafe(32))" >> .env
+
+# Add other required variables
+echo "ALGORITHM=HS256" >> .env
+echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> .env
+echo "DATABASE_URL=sqlite+aiosqlite:///./aegis.db" >> .env
+```
+
+For detailed setup instructions, see [Server/ENVIRONMENT_SETUP.md](Server/ENVIRONMENT_SETUP.md)
 
 ### Backend Issues
 
