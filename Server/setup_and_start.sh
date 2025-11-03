@@ -12,11 +12,12 @@ echo ""
 
 # Step 1: Create .env file with secure keys if it doesn't exist
 if [ ! -f .env ]; then
-    echo "[Step 1/6] Creating .env file with secure random keys..."
+    echo "[Step 1/7] Creating .env file with secure random keys..."
     
     # Generate secure random keys
     SECRET_KEY=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))")
     AGENT_API_KEY=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))")
+    DASHBOARD_API_KEY=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))")
     
     # Create .env file
     cat > .env << EOF
@@ -35,27 +36,32 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 # Agent/Node API Key - DO NOT SHARE
 AGENT_API_KEY=$AGENT_API_KEY
 
+# Dashboard API Key (Optional) - Adds extra security layer
+# If set, dashboard must send this key in X-Dashboard-Key header
+DASHBOARD_API_KEY=$DASHBOARD_API_KEY
+
 # Database URL
 DATABASE_URL=sqlite+aiosqlite:///./aegis.db
 EOF
     
     echo "✓ .env file created with secure random keys"
-    echo "  SECRET_KEY: $SECRET_KEY"
-    echo "  AGENT_API_KEY: $AGENT_API_KEY"
+    echo "  SECRET_KEY: ${SECRET_KEY:0:20}..."
+    echo "  AGENT_API_KEY: ${AGENT_API_KEY:0:20}..."
+    echo "  DASHBOARD_API_KEY: ${DASHBOARD_API_KEY:0:20}..."
     echo ""
 else
-    echo "[Step 1/6] .env file already exists, skipping..."
+    echo "[Step 1/7] .env file already exists, skipping..."
     echo ""
 fi
 
 # Step 2: Create virtual environment
-echo "[Step 2/6] Creating virtual environment 'aegis'..."
+echo "[Step 2/7] Creating virtual environment 'aegis'..."
 python3 -m venv aegis
 echo "✓ Virtual environment created successfully"
 echo ""
 
 # Step 3: Activate virtual environment and install dependencies
-echo "[Step 3/6] Installing dependencies from requirments.txt..."
+echo "[Step 3/7] Installing dependencies from requirments.txt..."
 source aegis/bin/activate
 pip install --upgrade pip
 pip install -r requirments.txt
@@ -63,12 +69,12 @@ echo "✓ Dependencies installed successfully"
 echo ""
 
 # Step 4: Show installed packages
-echo "[Step 4/6] Installed packages:"
+echo "[Step 4/7] Installed packages:"
 pip list
 echo ""
 
 # Step 5: Initialize database
-echo "[Step 5/6] Initializing database..."
+echo "[Step 5/7] Initializing database..."
 
 # Remove old database if it exists to start fresh
 if [ -f aegis.db ]; then
@@ -120,17 +126,22 @@ echo ""
 # Step 7: Start the server
 echo "[Step 7/7] Starting Aegis server on port 8000..."
 echo "=========================================="
-echo "Server will be available at:"
-echo "  - API: http://localhost:8000"
-echo "  - Docs: http://localhost:8000/docs"
-echo "  - Health: http://localhost:8000/health"
-echo "=========================================="
+echo "Server configuration:"
+echo "  - Binding to: 127.0.0.1 (localhost only)"
+echo "  - Port: 8000"
+echo "  - Security: Not accessible from external networks"
 echo ""
-echo "User Management:"
-echo "  - To manage users later, run: python manage_users.py"
-echo "  - (Remember to activate the virtual environment first)"
+echo "Access points:"
+echo "  - Dashboard: http://localhost:3000 (only way to interact)"
+echo "  - Health check: http://localhost:8000/health"
+echo ""
+echo "🔒 Security Note:"
+echo "   The API is only accessible via localhost for security."
+echo "   External access is blocked. Only the dashboard can communicate"
+echo "   with the API server."
+echo "=========================================="
 echo ""
 echo "Press Ctrl+C to stop the server"
 echo ""
 
-uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app:app --host 127.0.0.1 --port 8000 --reload
