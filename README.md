@@ -124,7 +124,7 @@ This will automatically:
 - Create a virtual environment named `aegis`
 - Install all Python dependencies
 - Initialize the database
-- Create a default admin user (username: `admin`, password: `password123`)
+- **Prompt you to create your first user account**
 - Start the server on port 8000
 
 **Important:** The script generates secure random keys for JWT authentication. If you need to set custom keys, see [Environment Setup Guide](Server/ENVIRONMENT_SETUP.md).
@@ -142,22 +142,22 @@ This will:
 
 **Step 4: Access the dashboard**
 - Open http://localhost:3000
-- Login with username: `admin`, password: `password123`
-- **IMPORTANT:** Change the default password immediately!
+- Login with the user account you created during server setup
 
 ---
 
 ## User Management
 
-Aegis includes a complete database-backed user management system. No hardcoded credentials!
+Aegis includes a complete database-backed user management system with no default credentials.
 
 ### Initial Setup
 
-When you first run the server setup script, it automatically creates:
-- All database tables (users, nodes, policies, events)
-- A default admin user with credentials: `admin` / `password123`
+When you first run the server setup script (`./setup_and_start.sh`), it:
+1. Creates all database tables (users, nodes, policies, events)
+2. **Opens the user management tool** where you must create your first user account
+3. This account will be your login credentials for the dashboard
 
-**Security Warning:** Always change the default password immediately after first login!
+**The setup script requires at least one user to be created before starting the server.**
 
 ### Managing Users
 

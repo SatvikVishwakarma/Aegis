@@ -111,10 +111,6 @@ export default function LoginPage() {
             {isLoading ? 'Signing in...' : 'Sign In'}
           </motion.button>
         </form>
-
-        <div className="pt-4 text-center text-xs text-slate-500 dark:text-slate-400">
-          Default credentials: admin / password123
-        </div>
       </motion.div>
     </div>
   )

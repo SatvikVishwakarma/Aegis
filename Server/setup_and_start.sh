@@ -72,14 +72,56 @@ echo "[Step 5/6] Initializing database..."
 python init_db.py
 echo ""
 
-# Step 6: Start the server
-echo "[Step 6/6] Starting Aegis server on port 8000..."
+# Step 6: User Management (Mandatory)
+echo "[Step 6/7] User Account Creation"
+echo "=========================================="
+echo "No default users exist. You must create at least one user account."
+echo "This will be your admin/login account for the dashboard."
+echo ""
+echo "Opening user management..."
+echo ""
+python manage_users.py
+
+# Check if at least one user was created
+USER_COUNT=$(python -c "
+import asyncio
+from sqlalchemy import select, func
+from db import AsyncSessionLocal
+from models import User
+
+async def count_users():
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(select(func.count(User.id)))
+        return result.scalar()
+
+print(asyncio.run(count_users()))
+")
+
+if [ "$USER_COUNT" -eq "0" ]; then
+    echo ""
+    echo "❌ ERROR: No users created. At least one user is required to login."
+    echo "Please run the script again and create a user account."
+    exit 1
+fi
+
+echo ""
+echo "✓ User account(s) created successfully"
+echo ""
+
+# Step 7: Start the server
+echo "[Step 7/7] Starting Aegis server on port 8000..."
 echo "=========================================="
 echo "Server will be available at:"
 echo "  - API: http://localhost:8000"
 echo "  - Docs: http://localhost:8000/docs"
 echo "  - Health: http://localhost:8000/health"
 echo "=========================================="
+echo ""
+echo "User Management:"
+echo "  - To manage users later, run: python manage_users.py"
+echo "  - (Remember to activate the virtual environment first)"
+echo ""
+echo "Press Ctrl+C to stop the server"
 echo ""
 
 uvicorn app:app --host 0.0.0.0 --port 8000 --reload

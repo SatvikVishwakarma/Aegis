@@ -106,9 +106,8 @@ A next-generation security dashboard with an intuitive, high-performance, and vi
 
    The dashboard will be available at `http://localhost:3000`
 
-4. **Login with default credentials**:
-   - Username: `admin`
-   - Password: `password123`
+4. **Login**:
+   - Use the credentials you created during server setup
 
 ## 🎯 Usage
 
