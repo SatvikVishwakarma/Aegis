@@ -96,9 +96,6 @@ async def ingest_log(
     description="Retrieves a list of events with powerful filtering options.",
 )
 async def get_logs(
-    db: AsyncSession = Depends(get_db),
-    # This endpoint is protected. Only authenticated dashboard users can view logs.
-    current_user: dict = Depends(get_current_user),
     # --- Filtering Query Parameters ---
     node_id: Optional[int] = Query(None, description="Filter events by a specific Node ID."),
     severity: Optional[str] = Query(None, description="Filter events by severity (e.g., 'high', 'medium')."),
@@ -106,6 +103,9 @@ async def get_logs(
     start_time: Optional[datetime] = Query(None, description="The start of the time range to query (ISO 8601 format)."),
     end_time: Optional[datetime] = Query(None, description="The end of the time range to query (ISO 8601 format)."),
     limit: int = Query(100, ge=1, le=1000, description="The maximum number of events to return."),
+    db: AsyncSession = Depends(get_db),
+    # This endpoint is protected. Only authenticated dashboard users can view logs.
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Queries the database for events, allowing for flexible filtering.
