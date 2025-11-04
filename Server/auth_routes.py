@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db import get_db
 from models import User
 from schemas import Token
-from authentication import verify_password, create_access_token
+from authentication import verify_password, create_access_token, get_current_user
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +92,7 @@ async def login(
 
 
 @router.get("/verify")
-async def verify_token(current_user: dict = Depends(get_db)):
+async def verify_token(current_user: dict = Depends(get_current_user)):
     """
     Verify if the current token is valid.
     
