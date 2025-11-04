@@ -17,7 +17,7 @@ async def create_tables():
     print("Creating database tables...")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    print("✓ Tables created successfully")
+    print("[OK] Tables created successfully")
 
 
 async def create_admin_account():
@@ -33,7 +33,7 @@ async def create_admin_account():
         existing_admin = result.scalar_one_or_none()
         
         if existing_admin:
-            print("✓ Admin account already exists")
+            print("[OK] Admin account already exists")
             return None
         
         # Generate secure password
@@ -52,7 +52,7 @@ async def create_admin_account():
         session.add(admin)
         await session.commit()
         
-        print("✓ Admin account created successfully")
+        print("[OK] Admin account created successfully")
         return password
 
 
@@ -86,7 +86,7 @@ async def initialize_database():
             print(f"Password: {password}")
             print("*" * 70)
             print()
-            print("⚠️  SAVE THIS PASSWORD NOW!")
+            print("[WARNING] SAVE THIS PASSWORD NOW!")
             print("   This is the only time it will be displayed.")
             print("   You need it to login to the dashboard.")
             print("*" * 70)
@@ -95,7 +95,7 @@ async def initialize_database():
         return password
         
     except Exception as e:
-        print(f"❌ Error: {e}", file=sys.stderr)
+        print(f"[ERROR] {e}", file=sys.stderr)
         import traceback
         traceback.print_exc()
         sys.exit(1)

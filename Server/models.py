@@ -64,6 +64,7 @@ class Node(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     hostname: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     ip_address: Mapped[str] = mapped_column(String(45), unique=True, nullable=False)
+    group: Mapped[str] = mapped_column(String(100), nullable=True, index=True, doc="Group/category for the node (e.g., department, OS type)")
     last_seen: Mapped[datetime.datetime] = mapped_column(
         DateTime,
         default=func.now(),

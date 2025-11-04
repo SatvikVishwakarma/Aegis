@@ -48,12 +48,12 @@ export const fetchNodes = async () => {
   return response.data
 }
 
-export const registerNode = async (data: { hostname: string; ip_address: string }) => {
+export const registerNode = async (data: { hostname: string; ip_address: string; group?: string | null }) => {
   const response = await api.post('/nodes/register', data)
   return response.data
 }
 
-export const updateNode = async (nodeId: number, data: { hostname?: string; ip_address?: string }) => {
+export const updateNode = async (nodeId: number, data: { hostname?: string; ip_address?: string; group?: string | null }) => {
   const response = await api.put(`/nodes/${nodeId}`, data)
   return response.data
 }

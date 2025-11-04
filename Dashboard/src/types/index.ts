@@ -2,6 +2,7 @@ export interface Node {
   id: number
   hostname: string
   ip_address: string
+  group?: string | null
   status: string
   last_seen: string
 }

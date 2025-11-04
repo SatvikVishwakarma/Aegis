@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Server, Search, Plus, Trash2, Edit2, Circle } from 'lucide-react'
+import { Server, Search, Plus, Trash2, Edit2, Circle, Tag, Filter } from 'lucide-react'
 import Fuse from 'fuse.js'
 import { fetchNodes, registerNode, deleteNode, updateNode } from '@/lib/api'
 import { Node } from '@/types'
@@ -14,6 +14,7 @@ import toast from 'react-hot-toast'
 
 export default function NodesPage() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedGroup, setSelectedGroup] = useState<string>('all')
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingNode, setEditingNode] = useState<Node | null>(null)
   const queryClient = useQueryClient()
@@ -24,22 +25,42 @@ export default function NodesPage() {
     refetchInterval: 5000,
   })
 
+  // Get unique groups from nodes
+  const groups = useMemo(() => {
+    if (!nodes) return []
+    const uniqueGroups = new Set(
+      nodes
+        .map(n => n.group)
+        .filter((g): g is string => g !== null && g !== undefined && g !== '')
+    )
+    return Array.from(uniqueGroups).sort()
+  }, [nodes])
+
   // Fuzzy search with Fuse.js
   const fuse = useMemo(() => {
     if (!nodes) return null
     return new Fuse(nodes, {
-      keys: ['hostname', 'ip_address', 'status'],
+      keys: ['hostname', 'ip_address', 'status', 'group'],
       threshold: 0.3,
     })
   }, [nodes])
 
   const filteredNodes = useMemo(() => {
     if (!nodes) return []
-    if (!searchQuery) return nodes
-    if (!fuse) return nodes
     
-    return fuse.search(searchQuery).map((result) => result.item)
-  }, [nodes, searchQuery, fuse])
+    // Filter by group first
+    let filtered = nodes
+    if (selectedGroup !== 'all') {
+      filtered = nodes.filter(node => node.group === selectedGroup)
+    }
+    
+    // Then apply search
+    if (!searchQuery) return filtered
+    if (!fuse) return filtered
+    
+    const searchResults = fuse.search(searchQuery).map((result) => result.item)
+    return filtered.filter(node => searchResults.some(r => r.id === node.id))
+  }, [nodes, searchQuery, selectedGroup, fuse])
 
   const deleteMutation = useMutation({
     mutationFn: ({ id, password }: { id: number; password: string }) => 
@@ -86,16 +107,33 @@ export default function NodesPage() {
         </motion.button>
       </div>
 
-      {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search nodes by hostname, IP, or status..."
-          className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-slate-900 dark:text-white"
-        />
+      {/* Search and Filter Bar */}
+      <div className="flex gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search nodes by hostname, IP, group, or status..."
+            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-slate-900 dark:text-white"
+          />
+        </div>
+        
+        {/* Group Filter */}
+        <div className="relative min-w-[200px]">
+          <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <select
+            value={selectedGroup}
+            onChange={(e) => setSelectedGroup(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-slate-900 dark:text-white appearance-none cursor-pointer"
+          >
+            <option value="all">All Groups</option>
+            {groups.map(group => (
+              <option key={group} value={group}>{group}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Nodes Table */}
@@ -112,6 +150,9 @@ export default function NodesPage() {
               <thead className="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                    ID
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
@@ -119,6 +160,9 @@ export default function NodesPage() {
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                     IP Address
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                    Group
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                     Last Seen
@@ -139,6 +183,11 @@ export default function NodesPage() {
                       transition={{ delay: idx * 0.03 }}
                       className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
                     >
+                      <td className="px-6 py-4">
+                        <span className="text-sm font-mono text-slate-600 dark:text-slate-400">
+                          #{node.id}
+                        </span>
+                      </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <div className="relative">
@@ -174,6 +223,18 @@ export default function NodesPage() {
                         <code className="text-sm text-slate-600 dark:text-slate-400">
                           {node.ip_address}
                         </code>
+                      </td>
+                      <td className="px-6 py-4">
+                        {node.group ? (
+                          <div className="flex items-center gap-2">
+                            <Tag className="w-4 h-4 text-slate-400" />
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                              {node.group}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-slate-400 dark:text-slate-500">—</span>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-sm text-slate-600 dark:text-slate-400">
@@ -234,6 +295,7 @@ function NodeModal({
 }) {
   const [hostname, setHostname] = useState(node?.hostname || '')
   const [ipAddress, setIpAddress] = useState(node?.ip_address || '')
+  const [group, setGroup] = useState(node?.group || '')
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
@@ -252,7 +314,11 @@ function NodeModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    mutation.mutate({ hostname, ip_address: ipAddress })
+    mutation.mutate({ 
+      hostname, 
+      ip_address: ipAddress,
+      group: group || null
+    })
   }
 
   return (
@@ -281,6 +347,21 @@ function NodeModal({
             className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-slate-900 dark:text-white"
             required
           />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            Group (Optional)
+          </label>
+          <input
+            type="text"
+            value={group}
+            onChange={(e) => setGroup(e.target.value)}
+            placeholder="e.g., IT, HR, Linux, Windows"
+            className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-slate-900 dark:text-white"
+          />
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Group nodes by department, OS type, or any category
+          </p>
         </div>
         <div className="flex gap-3 pt-4">
           <button

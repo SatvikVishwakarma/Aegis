@@ -16,6 +16,7 @@ class NodeBase(BaseModel):
     """Base schema for a Node, containing common attributes."""
     hostname: str = Field(..., max_length=255, description="The unique hostname of the node.")
     ip_address: str = Field(..., max_length=45, description="The IP address of the node.")
+    group: Optional[str] = Field(None, max_length=100, description="Group/category for the node (e.g., 'IT', 'HR', 'Linux', 'Windows').")
 
 
 class NodeRegisterRequest(NodeBase):
@@ -31,10 +32,11 @@ class NodeHeartbeatRequest(BaseModel):
 class NodeUpdateRequest(BaseModel):
     """
     Schema for updating an existing node.
-    All fields are optional, so you can update one or both.
+    All fields are optional, so you can update one or more.
     """
     hostname: Optional[str] = Field(None, max_length=255, description="The new unique hostname for the node.")
     ip_address: Optional[str] = Field(None, max_length=45, description="The new IP address for the node.")
+    group: Optional[str] = Field(None, max_length=100, description="The new group/category for the node.")
 
 
 class NodeResponse(NodeBase):
@@ -43,6 +45,7 @@ class NodeResponse(NodeBase):
     Includes database-generated fields like ID and timestamps.
     """
     id: int
+    group: Optional[str] = None
     status: str = Field(description="The current operational status of the node (e.g., 'online', 'offline').")
     last_seen: datetime.datetime
 

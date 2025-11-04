@@ -46,6 +46,8 @@ async def register_node(
 
     if existing_node:
         existing_node.ip_address = node_in.ip_address
+        if node_in.group is not None:
+            existing_node.group = node_in.group
         existing_node.status = "online"
         await db.commit()
         await db.refresh(existing_node)
@@ -61,6 +63,7 @@ async def register_node(
     new_node = models.Node(
         hostname=node_in.hostname,
         ip_address=node_in.ip_address,
+        group=node_in.group,
         status="online",
     )
     db.add(new_node)
@@ -112,7 +115,7 @@ async def update_node(
     node_update: schemas.NodeUpdateRequest,
     db: AsyncSession = Depends(get_db)
 ):
-    """ Updates a node's editable fields (hostname, ip_address). """
+    """ Updates a node's editable fields (hostname, ip_address, group). """
     db_node = await db.get(models.Node, node_id)
     if not db_node:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Node not found")
@@ -128,6 +131,10 @@ async def update_node(
     # Update IP address if a new one is provided
     if node_update.ip_address:
         db_node.ip_address = node_update.ip_address
+    
+    # Update group if provided
+    if node_update.group is not None:
+        db_node.group = node_update.group
     
     await db.commit()
     await db.refresh(db_node)
