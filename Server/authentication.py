@@ -124,8 +124,7 @@ def decode_access_token(token: str) -> Optional[dict]:
 # ==============================================================================
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    db: AsyncSession = None
+    token: str = Depends(oauth2_scheme)
 ) -> dict:
     """
     Validate JWT token and return current user data.
@@ -133,7 +132,6 @@ async def get_current_user(
     
     Args:
         token: JWT token from Authorization header
-        db: Database session (optional, for future user validation)
         
     Returns:
         User data from token
