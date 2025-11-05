@@ -133,7 +133,6 @@ npm run dev
 ```
 
 **Dashboard URL:** http://localhost:3000  
-**Default Login:** admin / admin123 (change immediately in production)
 
 ---
 
@@ -174,22 +173,6 @@ PORT=8000
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
-
----
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|-----------|-------------|
-| POST | /api/v1/auth/login | Authenticate user and return JWT |
-| GET | /api/v1/nodes | Retrieve list of registered agents |
-| POST | /api/v1/nodes/register | Register a new agent |
-| POST | /api/v1/logs/ingest | Submit event logs from agents |
-| GET | /api/v1/logs | Query logs and filter by node/type |
-| DELETE | /api/v1/policies/{id} | Remove a specific policy |
-
-Interactive API Docs:  
-**http://localhost:8000/docs**
 
 ---
 
