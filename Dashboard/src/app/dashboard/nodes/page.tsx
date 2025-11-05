@@ -2,9 +2,8 @@
 
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Server, Search, Plus, Trash2, Edit2, Circle, Tag, Filter, ExternalLink } from 'lucide-react'
+import { Server, Search, Plus, Trash2, Edit2, Circle, Tag, Filter } from 'lucide-react'
 import Fuse from 'fuse.js'
 import { fetchNodes, registerNode, deleteNode, updateNode } from '@/lib/api'
 import { Node } from '@/types'
@@ -19,7 +18,6 @@ export default function NodesPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingNode, setEditingNode] = useState<Node | null>(null)
   const queryClient = useQueryClient()
-  const router = useRouter()
 
   const { data: nodes, isLoading } = useQuery<Node[]>({
     queryKey: ['nodes'],
@@ -214,16 +212,12 @@ export default function NodesPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <button
-                          onClick={() => router.push(`/dashboard/nodes/${node.id}`)}
-                          className="flex items-center gap-2 group hover:bg-slate-100 dark:hover:bg-slate-700 px-2 py-1 rounded transition-colors"
-                        >
+                        <div className="flex items-center gap-2">
                           <Server className="w-4 h-4 text-slate-400" />
-                          <span className="font-medium text-slate-900 dark:text-white group-hover:text-primary transition-colors">
+                          <span className="font-medium text-slate-900 dark:text-white">
                             {node.hostname}
                           </span>
-                          <ExternalLink className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </button>
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <code className="text-sm text-slate-600 dark:text-slate-400">

@@ -2,24 +2,81 @@
 
 ## Overview
 
-The Node Detail View feature provides a dedicated page for viewing all event and network logs associated with a specific node. This allows administrators to drill down into individual node activity and investigate security events more effectively.
+The Node Detail View feature provides a hierarchical navigation system for viewing event and network logs. The Events page now displays nodes organized by groups, allowing administrators to browse by department, OS type, or environment, then drill down into individual node activity.
+
+## Navigation Hierarchy
+
+### Level 1: Events Page (Group View)
+**Path**: `/dashboard/events`
+
+Displays all nodes organized by their assigned groups:
+- Shows group cards with node counts
+- Lists all nodes within each group
+- Provides statistics (total groups, total nodes)
+- Real-time status indicators for each node
+
+### Level 2: Node Detail Page (Logs View)
+**Path**: `/dashboard/nodes/[id]`
+
+Shows detailed logs for a specific node:
+- Event logs tab (security events)
+- Network logs tab (network connections)
+- Node information and status
 
 ## Feature Access
 
-### Navigation
-1. Go to Dashboard > Nodes
-2. Click on any node's hostname in the nodes table
-3. The node detail page opens showing comprehensive node information and logs
+### From Events Page
+1. Go to **Dashboard > Events**
+2. Browse the list of groups
+3. Click on any **node** within a group
+4. View that node's event and network logs
 
-### URL Pattern
-```
-/dashboard/nodes/[id]
-```
-Where `[id]` is the numeric node ID.
+### From Nodes Page  
+1. Go to **Dashboard > Nodes**
+2. Click on any **node hostname** in the nodes table
+3. View that node's event and network logs
 
-## Page Sections
+## Events Page Sections
 
-### 1. Node Information Header
+### 1. Page Header
+- Title: "Event Viewer"
+- Description: "Browse nodes by group to view their event and network logs"
+
+### 2. Statistics Cards
+Two stat cards showing:
+- **Total Groups**: Count of all node groups (including "Ungrouped")
+- **Total Nodes**: Total count of registered nodes
+
+### 3. Group Cards
+
+Each group is displayed in an expandable card showing:
+
+#### Group Header
+- Group icon with colored background
+- Group name (e.g., "Production", "IT Department", "Linux Servers")
+- Node count badge (e.g., "5 nodes")
+
+#### Node List
+For each node in the group:
+- **Server Icon**: Visual indicator with hover effect
+- **Hostname**: Node name in bold (clickable)
+- **Status Indicator**: Green dot for online, gray for offline
+- **Status Text**: "online" or "offline"
+- **IP Address**: Displayed in monospace code format
+- **Last Seen**: Relative timestamp (e.g., "2 minutes ago")
+- **View Logs Button**: Blue badge with activity icon
+- **Chevron Icon**: Right arrow indicating clickability
+
+### 4. Ungrouped Nodes
+Nodes without a group assignment appear in a special "Ungrouped" section at the bottom.
+
+### 5. Empty State
+When no nodes exist, displays:
+- Large server icon
+- "No Nodes Available" message
+- Helpful instruction to register nodes
+
+## Node Detail Page Sections
 
 Displays key node details in a card layout:
 
@@ -71,7 +128,44 @@ Each event card shows:
 
 ## Technical Implementation
 
-### Frontend Components
+### Events Page (Group View)
+
+**File**: `Dashboard/src/app/dashboard/events/page.tsx`
+
+Key features:
+- Fetches all nodes and groups them by the `group` field
+- Creates Map structure: `Map<string, Node[]>`
+- Nodes without groups go into "Ungrouped" category
+- Alphabetical sorting with "Ungrouped" always last
+- Real-time updates every 5 seconds via React Query
+- Click handler navigates to `/dashboard/nodes/${node.id}`
+
+#### Grouping Logic
+```typescript
+const groupedNodes = useMemo(() => {
+  const groups = new Map<string, Node[]>()
+  const ungrouped: Node[] = []
+  
+  nodes.forEach(node => {
+    if (node.group) {
+      if (!groups.has(node.group)) {
+        groups.set(node.group, [])
+      }
+      groups.get(node.group)!.push(node)
+    } else {
+      ungrouped.push(node)
+    }
+  })
+  
+  if (ungrouped.length > 0) {
+    groups.set('Ungrouped', ungrouped)
+  }
+  
+  return groups
+}, [nodes])
+```
+
+### Node Detail Page (Logs View)
 
 **File**: `Dashboard/src/app/dashboard/nodes/[id]/page.tsx`
 
@@ -104,27 +198,16 @@ Key features:
 
 ### Click Navigation
 
-**File**: `Dashboard/src/app/dashboard/nodes/page.tsx`
+**Events Page**: `Dashboard/src/app/dashboard/events/page.tsx`
+- Each node row is a clickable button element
+- Hover effects: background color, icon color, text color changes
+- Click navigates to `/dashboard/nodes/${node.id}`
+- Visual feedback with "View Logs" badge and chevron icon
 
-Updated hostname cell to be clickable:
-```tsx
-<button
-  onClick={() => router.push(`/dashboard/nodes/${node.id}`)}
-  className="flex items-center gap-2 group hover:bg-slate-100"
->
-  <Server className="w-4 h-4 text-slate-400" />
-  <span className="font-medium group-hover:text-primary">
-    {node.hostname}
-  </span>
-  <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100" />
-</button>
-```
-
-Visual feedback:
-- Hover effect with background color change
-- Text color changes to primary blue
-- ExternalLink icon appears on hover
-- Cursor changes to pointer
+**Nodes Page**: `Dashboard/src/app/dashboard/nodes/page.tsx`
+- Hostname cells are clickable buttons
+- Hover shows external link icon
+- Click navigates to `/dashboard/nodes/${node.id}`
 
 ## User Experience
 
@@ -153,7 +236,28 @@ Visual feedback:
 
 ## Use Cases
 
-### 1. Security Investigation
+### 1. Department-Based Monitoring
+Organization by department:
+1. Navigate to Events page
+2. See groups like "IT Department", "HR", "Finance"
+3. Click on nodes within specific department
+4. Monitor department-specific security events
+
+### 2. Environment-Based Monitoring
+Separation by environment:
+1. View groups like "Production", "Staging", "Development"
+2. Quickly access production nodes for critical monitoring
+3. Isolate staging environment issues
+4. Review development environment activity
+
+### 3. OS-Based Monitoring
+Organization by operating system:
+1. See groups like "Linux Servers", "Windows Servers", "macOS Workstations"
+2. Monitor OS-specific security events
+3. Compare behavior across different platforms
+4. Platform-specific incident response
+
+### 4. Security Investigation
 When a security alert is triggered:
 1. Navigate to the affected node's detail page
 2. Review recent event logs for suspicious activity
@@ -183,7 +287,22 @@ For audit purposes:
 
 ## Benefits
 
-### Improved Visibility
+### Organized Navigation
+- Browse nodes by logical groupings (department, OS, environment)
+- Quick visual overview of node distribution across groups
+- Easy identification of group-specific nodes
+
+### Improved Context
+- See which group a node belongs to before viewing logs
+- Understand node relationships and organizational structure
+- Group-level statistics and insights
+
+### Efficient Workflow
+- Two-click navigation: Group view → Node view → Logs
+- No need to remember node IDs or hostnames
+- Visual indicators show node status at a glance
+
+### Better Visibility
 - Centralized view of all node activity
 - Easy access to detailed event information
 - Organized categorization of events

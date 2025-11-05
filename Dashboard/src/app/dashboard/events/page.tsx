@@ -1,55 +1,59 @@
 'use client'
 
-import { useState, useEffect, useMemo, Fragment } from 'react'
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { motion, AnimatePresence } from 'framer-motion'
-import { FileText, Filter, ChevronDown, ChevronUp } from 'lucide-react'
-import { fetchEvents } from '@/lib/api'
-import { Event } from '@/types'
-import { formatDate, getSeverityColor } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { Layers, Server, ChevronRight, Users, Activity } from 'lucide-react'
+import { fetchNodes } from '@/lib/api'
+import { Node } from '@/types'
+import { getRelativeTime } from '@/lib/utils'
 import { SkeletonTable } from '@/components/ui/Skeleton'
 
 export default function EventsPage() {
-  const [severityFilter, setSeverityFilter] = useState<string>('')
-  const [typeFilter, setTypeFilter] = useState<string>('')
-  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
-  const [debouncedFilters, setDebouncedFilters] = useState({ severity: '', type: '' })
+  const router = useRouter()
 
-  // Debounce filters
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedFilters({ severity: severityFilter, type: typeFilter })
-    }, 300)
-
-    return () => clearTimeout(timer)
-  }, [severityFilter, typeFilter])
-
-  const { data: events, isLoading } = useQuery<Event[]>({
-    queryKey: ['events', debouncedFilters],
-    queryFn: () =>
-      fetchEvents({
-        severity: debouncedFilters.severity || undefined,
-        event_type: debouncedFilters.type || undefined,
-        limit: 100,
-      }),
+  const { data: nodes, isLoading } = useQuery<Node[]>({
+    queryKey: ['nodes'],
+    queryFn: fetchNodes,
     refetchInterval: 5000,
   })
 
-  const toggleRow = (id: number) => {
-    const newSet = new Set(expandedRows)
-    if (newSet.has(id)) {
-      newSet.delete(id)
-    } else {
-      newSet.add(id)
+  // Group nodes by their group field
+  const groupedNodes = useMemo(() => {
+    if (!nodes) return new Map<string, Node[]>()
+    
+    const groups = new Map<string, Node[]>()
+    
+    // Create "Ungrouped" category for nodes without a group
+    const ungrouped: Node[] = []
+    
+    nodes.forEach(node => {
+      if (node.group) {
+        if (!groups.has(node.group)) {
+          groups.set(node.group, [])
+        }
+        groups.get(node.group)!.push(node)
+      } else {
+        ungrouped.push(node)
+      }
+    })
+    
+    // Add ungrouped nodes if any exist
+    if (ungrouped.length > 0) {
+      groups.set('Ungrouped', ungrouped)
     }
-    setExpandedRows(newSet)
-  }
+    
+    // Sort groups alphabetically, but keep "Ungrouped" at the end
+    return new Map([...groups.entries()].sort((a, b) => {
+      if (a[0] === 'Ungrouped') return 1
+      if (b[0] === 'Ungrouped') return -1
+      return a[0].localeCompare(b[0])
+    }))
+  }, [nodes])
 
-  // Get unique event types for filter
-  const eventTypes = useMemo(() => {
-    if (!events) return []
-    return Array.from(new Set(events.map((e) => e.event_type)))
-  }, [events])
+  const totalNodes = nodes?.length || 0
+  const totalGroups = groupedNodes.size
 
   return (
     <div className="space-y-6">
@@ -59,172 +63,137 @@ export default function EventsPage() {
           Event Viewer
         </h1>
         <p className="text-slate-600 dark:text-slate-400 mt-1">
-          Monitor and analyze security events in real-time
+          Browse nodes by group to view their event and network logs
         </p>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700">
-        <div className="flex items-center gap-3 mb-4">
-          <Filter className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-          <h2 className="font-semibold text-slate-900 dark:text-white">Filters</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Severity
-            </label>
-            <select
-              value={severityFilter}
-              onChange={(e) => setSeverityFilter(e.target.value)}
-              className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-slate-900 dark:text-white"
-            >
-              <option value="">All Severities</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
-            </select>
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <Layers className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Total Groups</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalGroups}</p>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Event Type
-            </label>
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-slate-900 dark:text-white"
-            >
-              <option value="">All Types</option>
-              {eventTypes.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+              <Server className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Total Nodes</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalNodes}</p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Events Table */}
+      {/* Groups List */}
       {isLoading ? (
-        <SkeletonTable rows={10} />
+        <SkeletonTable rows={5} />
       ) : (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden"
-        >
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-12">
-                    
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Timestamp
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Event Type
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Severity
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Node ID
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                <AnimatePresence>
-                  {events?.map((event, idx) => (
-                    <Fragment key={event.id}>
-                      <motion.tr
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
-                        transition={{ delay: idx * 0.02 }}
-                        className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors cursor-pointer"
-                        onClick={() => toggleRow(event.id)}
-                      >
-                        <td className="px-6 py-4">
-                          <button className="p-1 hover:bg-slate-200 dark:hover:bg-slate-600 rounded">
-                            {expandedRows.has(event.id) ? (
-                              <ChevronUp className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-                            )}
-                          </button>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-sm text-slate-900 dark:text-white">
-                            {formatDate(event.timestamp)}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
+        <div className="space-y-4">
+          {Array.from(groupedNodes.entries()).map(([groupName, groupNodes], idx) => (
+            <motion.div
+              key={groupName}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
+            >
+              {/* Group Header */}
+              <div className="bg-slate-50 dark:bg-slate-700/50 px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                      <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                        {groupName}
+                      </h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        {groupNodes.length} {groupNodes.length === 1 ? 'node' : 'nodes'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Nodes List */}
+              <div className="divide-y divide-slate-200 dark:divide-slate-700">
+                {groupNodes.map((node, nodeIdx) => (
+                  <motion.button
+                    key={node.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 + nodeIdx * 0.02 }}
+                    onClick={() => router.push(`/dashboard/nodes/${node.id}`)}
+                    className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group"
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
+                        <Server className="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                      </div>
+                      
+                      <div className="flex-1 text-left">
+                        <div className="flex items-center gap-3">
+                          <h4 className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            {node.hostname}
+                          </h4>
                           <div className="flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-slate-400" />
-                            <span className="text-sm font-medium text-slate-900 dark:text-white">
-                              {event.event_type}
+                            <div className={`w-2 h-2 rounded-full ${
+                              node.status === 'online' 
+                                ? 'bg-emerald-500' 
+                                : 'bg-slate-400'
+                            }`} />
+                            <span className="text-sm capitalize text-slate-600 dark:text-slate-400">
+                              {node.status}
                             </span>
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`px-2 py-1 text-xs font-medium rounded capitalize ${getSeverityColor(
-                              event.severity
-                            )}`}
-                          >
-                            {event.severity}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <code className="text-sm text-slate-600 dark:text-slate-400">
-                            {event.node_id}
+                        </div>
+                        <div className="flex items-center gap-4 mt-1">
+                          <code className="text-sm text-slate-500 dark:text-slate-500">
+                            {node.ip_address}
                           </code>
-                        </td>
-                      </motion.tr>
-                      
-                      {/* Expandable Details Row */}
-                      <AnimatePresence>
-                        {expandedRows.has(event.id) && (
-                          <motion.tr
-                            key={`details-${event.id}`}
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                          >
-                            <td colSpan={5} className="px-6 py-4 bg-slate-50 dark:bg-slate-700/30">
-                              <div className="space-y-2">
-                                <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">
-                                  Event Details
-                                </h4>
-                                <pre className="bg-slate-100 dark:bg-slate-800 p-4 rounded-lg text-xs overflow-auto text-slate-900 dark:text-slate-100">
-                                  {JSON.stringify(event.details, null, 2)}
-                                </pre>
-                              </div>
-                            </td>
-                          </motion.tr>
-                        )}
-                      </AnimatePresence>
-                    </Fragment>
-                  ))}
-                </AnimatePresence>
-              </tbody>
-            </table>
-            {events?.length === 0 && (
-              <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-                No events found matching your filters
-              </div>
-            )}
-          </div>
-        </motion.div>
-      )}
+                          <span className="text-sm text-slate-500 dark:text-slate-500">
+                            Last seen: {getRelativeTime(node.last_seen)}
+                          </span>
+                        </div>
+                      </div>
 
-      {events && events.length > 0 && (
-        <div className="text-sm text-slate-600 dark:text-slate-400 text-center">
-          Showing {events.length} events
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <Activity className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                          View Logs
+                        </span>
+                      </div>
+                    </div>
+
+                    <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+
+          {groupedNodes.size === 0 && (
+            <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-12 text-center">
+              <Server className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                No Nodes Available
+              </h3>
+              <p className="text-slate-600 dark:text-slate-400">
+                Register nodes to start viewing their event and network logs
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
