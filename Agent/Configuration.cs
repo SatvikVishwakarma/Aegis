@@ -33,6 +33,8 @@ namespace AegisAgent
     {
         public ProcessMonitorConfig ProcessMonitor { get; set; } = new();
         public NetworkMonitorConfig NetworkMonitor { get; set; } = new();
+        public RegistryMonitorConfig RegistryMonitor { get; set; } = new();
+        public ProcessControlConfig ProcessControl { get; set; } = new();
     }
 
     public class ProcessMonitorConfig
@@ -45,5 +47,18 @@ namespace AegisAgent
     {
         public bool Enabled { get; set; } = true;
         public int ScanIntervalSeconds { get; set; } = 30;
+    }
+
+    public class RegistryMonitorConfig
+    {
+        public bool Enabled { get; set; } = true;
+        public int ScanIntervalSeconds { get; set; } = 60;
+    }
+
+    public class ProcessControlConfig
+    {
+        public bool Enabled { get; set; } = true;
+        public int ScanIntervalSeconds { get; set; } = 5;
+        public string Action { get; set; } = "alert"; // alert, suspend, kill
     }
 }

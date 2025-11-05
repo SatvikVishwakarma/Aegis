@@ -1,626 +1,1249 @@
-# Aegis - Security Monitoring Dashboard
+# Aegis Security Monitoring System# Aegis - Security Monitoring Dashboard
 
-> **A next-generation security dashboard with real-time monitoring, policy management, and event visualization**
 
-Aegis is a comprehensive security monitoring platform featuring a modern FastAPI backend and a beautiful Next.js dashboard with fluid animations, real-time updates, and intuitive UX.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
+Complete security monitoring platform with centralized dashboard, real-time event collection, and automated threat response for Windows endpoints.> **A next-generation security dashboard with real-time monitoring, policy management, and event visualization**
+
+
+
+---Aegis is a comprehensive security monitoring platform featuring a modern FastAPI backend and a beautiful Next.js dashboard with fluid animations, real-time updates, and intuitive UX.
+
+
+
+## 🎯 Overview![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
 ![Python](https://img.shields.io/badge/python-3.9+-blue.svg)
-![Node](https://img.shields.io/badge/node-18+-green.svg)
-![Next.js](https://img.shields.io/badge/next.js-14-black.svg)
 
----
+**Aegis** is a three-tier security monitoring system:![Node](https://img.shields.io/badge/node-18+-green.svg)
 
-## Table of Contents
+- **Server** (Python/FastAPI) - Backend API and event processing![Next.js](https://img.shields.io/badge/next.js-14-black.svg)
 
-- [Features](#features)
-- [Quick Start](#quick-start)
-- [User Management](#user-management)
-- [Architecture](#architecture)
-- [API Documentation](#api-documentation)
-- [Deployment](#deployment)
+- **Dashboard** (Next.js/React) - Web-based management interface  
+
+- **Agent** (C#/.NET 8) - Windows endpoint monitoring and enforcement---
+
+
+
+### Key Features## Table of Contents
+
+
+
+#### 🖥️ Dashboard- [Features](#features)
+
+- Real-time event monitoring- [Quick Start](#quick-start)
+
+- Node management and grouping- [User Management](#user-management)
+
+- User authentication (JWT-based)- [Architecture](#architecture)
+
+- Group-based organization- [API Documentation](#api-documentation)
+
+- Detailed event logs per node- [Deployment](#deployment)
+
 - [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
 
----
+#### 🔒 Server- [Contributing](#contributing)
 
-## Features
+- RESTful API with FastAPI
+
+- SQLite database---
+
+- WebSocket support for real-time updates
+
+- JWT authentication## Features
+
+- Event ingestion and storage
 
 ### Modern UI/UX
-- **Fluid Animations** - Powered by Framer Motion for smooth page transitions and interactions
-- **Dark Mode** - Seamlessly integrated theme switcher with persistent preferences
-- **Responsive Design** - Works flawlessly on mobile, tablet, and desktop (320px - 1920px+)
-- **Command Palette** - Quick navigation with Ctrl+K keyboard shortcut
-- **Beautiful Typography** - Inter font with clear visual hierarchy
 
-### Performance & Real-time
+#### 🛡️ Agent (Windows)- **Fluid Animations** - Powered by Framer Motion for smooth page transitions and interactions
+
+- **Process Monitoring** - Track all process creation/termination- **Dark Mode** - Seamlessly integrated theme switcher with persistent preferences
+
+- **Network Monitoring** - Monitor TCP connections- **Responsive Design** - Works flawlessly on mobile, tablet, and desktop (320px - 1920px+)
+
+- **Registry Monitoring** - Detect registry changes in critical keys- **Command Palette** - Quick navigation with Ctrl+K keyboard shortcut
+
+- **Process Control** - Kill/suspend/alert on blacklisted processes- **Beautiful Typography** - Inter font with clear visual hierarchy
+
+- **Windows Service** - Persistent operation with auto-start
+
+- **Auto-registration** - Automatically registers with server### Performance & Real-time
+
 - **WebSocket Support** - Real-time updates for nodes and events without page refresh
-- **Optimistic UI** - Instant feedback on all user actions using TanStack Query
+
+---- **Optimistic UI** - Instant feedback on all user actions using TanStack Query
+
 - **Skeleton Loaders** - Better UX than traditional spinners during data loading
-- **Debounced Filtering** - Efficient search and filter operations (300ms delay)
+
+## 📋 Prerequisites- **Debounced Filtering** - Efficient search and filter operations (300ms delay)
+
 - **Smart Caching** - Intelligent data caching and auto-refresh (5-10 second intervals)
 
-### Dashboard Pages
+### Server & Dashboard
 
-#### 1. Dashboard Home
+- **Python 3.8+** (for Server)### Dashboard Pages
+
+- **Node.js 18+** (for Dashboard)
+
+- **npm or yarn** (for Dashboard)#### 1. Dashboard Home
+
 - Animated stat cards (Total Nodes, Online, Events, Critical Alerts)
-- Real-time event chart with Recharts visualization
-- Live activity feed with recent events
-- Auto-refresh every 5 seconds
+
+### Agent- Real-time event chart with Recharts visualization
+
+- **Windows 10/11 or Windows Server 2016+**- Live activity feed with recent events
+
+- **.NET 8.0 SDK** (for building only, not required on endpoints)- Auto-refresh every 5 seconds
+
+- **Administrator privileges** (for installation and monitoring)
 
 #### 2. Nodes Management
-- Instant fuzzy search with Fuse.js
+
+---- Instant fuzzy search with Fuse.js
+
 - Staggered row animations for smooth data loading
-- Pulsing online indicators (CSS keyframe animations)
+
+## 🚀 Quick Start- Pulsing online indicators (CSS keyframe animations)
+
 - Add, edit, and delete nodes with modal dialogs
-- Real-time online/offline status tracking
+
+### 1. Server Setup- Real-time online/offline status tracking
+
 - Last seen timestamps
 
-#### 3. Policies Management
+```bash
+
+cd Server#### 3. Policies Management
+
 - Visual policy cards with categorized display
-- Monaco Editor for JSON rule editing with syntax highlighting
-- Create and delete policies with confirmation
-- View assigned nodes per policy
-- Policy type badges (Firewall, IDS, Access Control, etc.)
 
-#### 4. Event Viewer
-- Debounced filtering by severity, type, and node
+# Create virtual environment- Monaco Editor for JSON rule editing with syntax highlighting
+
+python -m venv aegis- Create and delete policies with confirmation
+
+aegis\Scripts\activate  # Windows- View assigned nodes per policy
+
+source aegis/bin/activate  # Linux/Mac- Policy type badges (Firewall, IDS, Access Control, etc.)
+
+
+
+# Install dependencies#### 4. Event Viewer
+
+pip install -r requirments.txt- Debounced filtering by severity, type, and node
+
 - Expandable rows to view full event details
-- Color-coded severity badges (Low, Medium, High, Critical)
-- Formatted timestamps for better readability
-- JSON pretty-printing for event data
-- Real-time event streaming
 
-### Animations & Interactions
-- Page transitions with fade-in and slide-up effects
+# Setup database- Color-coded severity badges (Low, Medium, High, Critical)
+
+python database_setup.py- Formatted timestamps for better readability
+
+- JSON pretty-printing for event data
+
+# Configure environment- Real-time event streaming
+
+# Copy .env.example to .env and edit:
+
+cp .env.example .env### Animations & Interactions
+
+notepad .env  # Edit SECRET_KEY, AGENT_API_KEY, etc.- Page transitions with fade-in and slide-up effects
+
 - Staggered data loading (0.03s-0.05s delays per row)
-- Button hover effects with scale and color transitions
-- Modal scaling with spring animations
-- Pulsing status indicators
+
+# Start server- Button hover effects with scale and color transitions
+
+python app.py- Modal scaling with spring animations
+
+```- Pulsing status indicators
+
 - Smooth scrollbar styling
 
-### Security
-- JWT authentication with secure token storage
-- Protected routes with automatic redirects
-- Password hashing with bcrypt
-- CORS protection
-- Input validation with Pydantic schemas
-- API key support for event ingestion
+**Server runs on:** `http://localhost:8000`
 
-### Advanced Features
-- Fuzzy search across nodes
+### Security
+
+**Default API Key:** Check `.env` file for `AGENT_API_KEY`- JWT authentication with secure token storage
+
+- Protected routes with automatic redirects
+
+### 2. Dashboard Setup- Password hashing with bcrypt
+
+- CORS protection
+
+```bash- Input validation with Pydantic schemas
+
+cd Dashboard- API key support for event ingestion
+
+
+
+# Install dependencies### Advanced Features
+
+npm install- Fuzzy search across nodes
+
 - JSON editor with Monaco (VS Code editor component)
-- Toast notifications for user feedback
-- Zustand state management for theme and auth
-- Persistent sessions with localStorage
+
+# Configure environment- Toast notifications for user feedback
+
+# Create .env.local:- Zustand state management for theme and auth
+
+echo "NEXT_PUBLIC_API_URL=http://localhost:8000" > .env.local- Persistent sessions with localStorage
+
 - Keyboard navigation and accessibility
 
----
+# Start dashboard
+
+npm run dev---
+
+```
 
 ## Quick Start
 
+**Dashboard runs on:** `http://localhost:3000`
+
 ### Prerequisites
-- Python 3.9 or higher
-- Node.js 18 or higher
-- npm or yarn
 
-### Automated Setup (Recommended)
+**Default Login:**- Python 3.9 or higher
 
-**Step 1: Clone the repository**
+- Username: `admin`- Node.js 18 or higher
+
+- Password: `admin123`- npm or yarn
+
+
+
+### 3. Agent Deployment### Automated Setup (Recommended)
+
+
+
+#### On Build Server (One-time setup):**Step 1: Clone the repository**
+
 ```bash
-git clone https://github.com/SatvikVishwakarma/Aegis.git
-cd Aegis
+
+```powershellgit clone https://github.com/SatvikVishwakarma/Aegis.git
+
+cd Agentcd Aegis
+
 ```
 
-**Step 2: Start the backend**
-```bash
+# Run the package builder
+
+.\build-agent-package.ps1**Step 2: Start the backend**
+
+``````bash
+
 cd Server
-chmod +x setup_and_start.sh
-./setup_and_start.sh
-```
+
+**The script will ask:**chmod +x setup_and_start.sh
+
+1. Server IP address (e.g., `192.168.1.100` or `localhost`)./setup_and_start.sh
+
+2. Agent API Key (from Server's `.env` file - `AGENT_API_KEY`)```
+
+3. Node Group name (e.g., `Windows-Production`)
 
 This will automatically:
-- **Create `.env` file with secure random SECRET_KEY and AGENT_API_KEY**
-- Create a virtual environment named `aegis`
-- Install all Python dependencies
+
+**Output:**- **Create `.env` file with secure random SECRET_KEY and AGENT_API_KEY**
+
+- ZIP file: `publish/AegisAgent-YYYYMMDD-HHMMSS.zip`- Create a virtual environment named `aegis`
+
+- Contains everything needed for deployment- Install all Python dependencies
+
 - Initialize the database
-- **Generate a secure 10-character admin password**
+
+#### On Target Endpoints:- **Generate a secure 10-character admin password**
+
 - **Display the admin password (SAVE IT IMMEDIATELY!)**
-- Start the server on port 8000
 
-**⚠️ CRITICAL:** The setup script generates a single admin account with a random password that will only be shown ONCE. You must save it during setup!
+1. Copy the ZIP file to the Windows machine- Start the server on port 8000
 
-**Step 3: Start the dashboard** (in a new terminal)
-```bash
-cd Dashboard
-chmod +x setup_and_start.sh
+2. Extract to a permanent location (e.g., `C:\AegisAgent\`)
+
+3. Open PowerShell as Administrator:**⚠️ CRITICAL:** The setup script generates a single admin account with a random password that will only be shown ONCE. You must save it during setup!
+
+
+
+```powershell**Step 3: Start the dashboard** (in a new terminal)
+
+cd C:\AegisAgent```bash
+
+.\INSTALL.ps1cd Dashboard
+
+```chmod +x setup_and_start.sh
+
 ./setup_and_start.sh
-```
 
-This will:
+4. Choose installation type:```
+
+   - **Option 1**: Windows Service (Recommended - Auto-starts on boot)
+
+   - **Option 2**: Console Mode (For testing)This will:
+
 - Install all Node.js dependencies
-- Start the development server on port 3000
 
-**Step 4: Access the dashboard**
+**Done!** The agent will appear in the Dashboard's Nodes page.- Start the development server on port 3000
+
+
+
+---**Step 4: Access the dashboard**
+
 - Open http://localhost:3000
-- Login with:
+
+## 📁 Project Structure- Login with:
+
   - **Username:** `admin`
-  - **Password:** (the 10-character password shown during server setup)
 
----
+```  - **Password:** (the 10-character password shown during server setup)
 
-## Authentication & Security
+Aegis/
 
-Aegis uses a single admin account system with enhanced security measures.
+├── Server/              # Python FastAPI backend---
 
-### Admin Account
+│   ├── app.py          # Main application
 
-The system creates **one admin account** during initial setup:
-- **Username:** `admin` (fixed)
-- **Password:** 10-character secure random alphanumeric string
-- **Generated during:** First server setup (`./setup_and_start.sh`)
-- **⚠️ Displayed once:** During setup - you MUST save it!
+│   ├── authentication.py## Authentication & Security
 
-### Password Generation
+│   ├── database_setup.py
 
-The admin password is automatically generated using Python's `secrets` module:
-- **Length:** 10 characters
-- **Character set:** Letters (A-Z, a-z) and digits (0-9)
-- **No special characters:** For easier copying and typing
-- **Cryptographically secure:** Uses `secrets.choice()` for random generation
+│   ├── models.pyAegis uses a single admin account system with enhanced security measures.
 
-### Deletion Protection
+│   ├── .env            # Configuration (create from .env.example)
 
-To prevent accidental deletions, the system requires password confirmation:
-- **When deleting nodes:** You must enter the admin password
-- **When deleting policies:** You must enter the admin password
-- The backend verifies the password before executing the deletion
-- Invalid passwords return a 401 Unauthorized error
+│   └── requirments.txt### Admin Account
 
-This ensures that only authorized users can perform destructive operations.
+│
 
-### Lost Password Recovery
+├── Dashboard/          # Next.js frontendThe system creates **one admin account** during initial setup:
 
-If you lose the admin password:
+│   ├── src/- **Username:** `admin` (fixed)
+
+│   │   ├── app/       # Pages and routes- **Password:** 10-character secure random alphanumeric string
+
+│   │   ├── components/ # Reusable components- **Generated during:** First server setup (`./setup_and_start.sh`)
+
+│   │   ├── lib/       # API client and utilities- **⚠️ Displayed once:** During setup - you MUST save it!
+
+│   │   └── types/     # TypeScript definitions
+
+│   ├── package.json### Password Generation
+
+│   └── .env.local     # Configuration
+
+│The admin password is automatically generated using Python's `secrets` module:
+
+└── Agent/             # C# Windows agent- **Length:** 10 characters
+
+    ├── Program.cs- **Character set:** Letters (A-Z, a-z) and digits (0-9)
+
+    ├── AgentService.cs- **No special characters:** For easier copying and typing
+
+    ├── PolicyManager.cs- **Cryptographically secure:** Uses `secrets.choice()` for random generation
+
+    ├── Collectors/    # Event collectors
+
+    │   ├── ProcessMonitorCollector.cs### Deletion Protection
+
+    │   ├── NetworkMonitorCollector.cs
+
+    │   ├── RegistryMonitorCollector.csTo prevent accidental deletions, the system requires password confirmation:
+
+    │   └── ProcessControlCollector.cs- **When deleting nodes:** You must enter the admin password
+
+    ├── appsettings.json- **When deleting policies:** You must enter the admin password
+
+    └── build-agent-package.ps1  # Package builder- The backend verifies the password before executing the deletion
+
+```- Invalid passwords return a 401 Unauthorized error
+
+
+
+---This ensures that only authorized users can perform destructive operations.
+
+
+
+## ⚙️ Configuration### Lost Password Recovery
+
+
+
+### Server Configuration (`.env`)If you lose the admin password:
+
 1. Stop the server (`Ctrl+C`)
-2. Delete the database and environment files:
-   ```bash
-   cd Server
-   rm aegis.db .env
+
+```env2. Delete the database and environment files:
+
+# Security   ```bash
+
+SECRET_KEY=your-secret-key-here-change-this-in-production   cd Server
+
+AGENT_API_KEY=your-agent-api-key-change-this   rm aegis.db .env
+
    ```
-3. Run the setup script again: `./setup_and_start.sh`
-4. A new admin account with a new password will be created
+
+# Database3. Run the setup script again: `./setup_and_start.sh`
+
+DATABASE_URL=sqlite:///./aegis.db4. A new admin account with a new password will be created
+
 5. **Save the new password immediately!**
 
-**⚠️ Warning:** This will delete all your nodes, policies, and events data!
+# Server
 
-### Advanced User Management
+HOST=0.0.0.0**⚠️ Warning:** This will delete all your nodes, policies, and events data!
 
-For advanced users who need to manage the admin account manually:
+PORT=8000
 
-**Step 1: Activate the virtual environment**
-```bash
-cd Server
+```### Advanced User Management
+
+
+
+### Dashboard Configuration (`.env.local`)For advanced users who need to manage the admin account manually:
+
+
+
+```env**Step 1: Activate the virtual environment**
+
+NEXT_PUBLIC_API_URL=http://localhost:8000```bash
+
+```cd Server
+
 source aegis/bin/activate  # Linux/Mac
-# OR
-aegis\Scripts\activate     # Windows
+
+For production, change to your server's public URL:# OR
+
+```envaegis\Scripts\activate     # Windows
+
+NEXT_PUBLIC_API_URL=http://your-server-ip:8000```
+
 ```
 
 **Step 2: Initialize the database**
-```bash
+
+### Agent Configuration (Automatic)```bash
+
 python database_setup.py
+
+The `build-agent-package.ps1` script automatically generates `appsettings.json` with your provided configuration. You can manually edit it if needed:```
+
+
+
+```jsonThis will:
+
+{1. Create all database tables
+
+  "Server": {2. Generate an admin account with a secure random password
+
+    "ApiUrl": "http://YOUR_SERVER:8000/api/v1",3. Display the admin credentials (save them immediately!)
+
+    "ApiKey": "YOUR_AGENT_API_KEY"
+
+  },**Admin Account:**
+
+  "Node": {- Username: `admin`
+
+    "Hostname": "auto",- Password: Auto-generated 10-character alphanumeric string (displayed once)
+
+    "IpAddress": "auto",- Email: `admin@aegis.local`
+
+    "Group": "Windows-Production"
+
+  },**⚠️ Important:** Save the password when displayed - it will not be shown again!
+
+  "Collectors": {
+
+    "ProcessMonitor": { "Enabled": true, "ScanIntervalSeconds": 10 },### Password Management
+
+    "NetworkMonitor": { "Enabled": true, "ScanIntervalSeconds": 30 },
+
+    "RegistryMonitor": { "Enabled": true, "ScanIntervalSeconds": 60 },The admin password is used for:
+
+    "ProcessControl": { - Dashboard login
+
+      "Enabled": true, - Confirming deletion of nodes and policies
+
+      "ScanIntervalSeconds": 5,
+
+      "Action": "alert"  // Options: alert, suspend, kill**To reset the admin password:**
+
+    }1. Delete the database file: `rm aegis.db`
+
+  }2. Run initialization again: `python database_setup.py`
+
+}3. Save the new password
+
 ```
-
-This will:
-1. Create all database tables
-2. Generate an admin account with a secure random password
-3. Display the admin credentials (save them immediately!)
-
-**Admin Account:**
-- Username: `admin`
-- Password: Auto-generated 10-character alphanumeric string (displayed once)
-- Email: `admin@aegis.local`
-
-**⚠️ Important:** Save the password when displayed - it will not be shown again!
-
-### Password Management
-
-The admin password is used for:
-- Dashboard login
-- Confirming deletion of nodes and policies
-
-**To reset the admin password:**
-1. Delete the database file: `rm aegis.db`
-2. Run initialization again: `python database_setup.py`
-3. Save the new password
 
 ### Authentication Flow
 
+---
+
 **Login to dashboard:**
-1. Navigate to `http://localhost:3000`
+
+## 🔐 Security Features1. Navigate to `http://localhost:3000`
+
 2. Enter username: `admin`
-3. Enter the auto-generated password
+
+### Agent Capabilities3. Enter the auto-generated password
+
 4. Receive JWT token stored in localStorage
-5. All subsequent requests include the token
 
-**API authentication:**
-```bash
-# Login
-curl -X POST http://localhost:8000/api/v1/auth/login \
+#### Process Control5. All subsequent requests include the token
+
+- **Default Blacklist**: mimikatz, psexec, netcat, procdump, lazagne
+
+- **Actions**:**API authentication:**
+
+  - `alert` - Log only (safe)```bash
+
+  - `suspend` - Freeze process (reversible)# Login
+
+  - `kill` - Terminate process (permanent)curl -X POST http://localhost:8000/api/v1/auth/login \
+
   -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "username=admin&password=YourPassword123"
 
-# Response
-{
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer"
-}
+⚠️ **Start with "alert" mode and test thoroughly before using "kill" mode!**  -d "username=admin&password=YourPassword123"
 
-# Use token in subsequent requests
-curl -X GET http://localhost:8000/api/v1/nodes \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-```
 
-**Delete user:**
-```bash
-DELETE /api/v1/users/{user_id}
-```
+
+#### Registry Monitoring# Response
+
+Monitors critical Windows registry paths:{
+
+- Autorun locations (`HKLM/HKCU\...\Run`, `RunOnce`)  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+
+- Windows Services (`HKLM\SYSTEM\CurrentControlSet\Services`)  "token_type": "bearer"
+
+- Winlogon settings}
+
+
+
+#### Event Types# Use token in subsequent requests
+
+- `process_started` - New process detectedcurl -X GET http://localhost:8000/api/v1/nodes \
+
+- `process_terminated` - Process ended  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+- `blacklisted_process_detected` - Blacklisted process found```
+
+- `process_terminated_by_policy` - Process killed by policy
+
+- `process_suspended_by_policy` - Process suspended by policy**Delete user:**
+
+- `network_connection` - New TCP connection```bash
+
+- `registry_value_added` - Registry value createdDELETE /api/v1/users/{user_id}
+
+- `registry_value_modified` - Registry value changed```
+
+- `registry_value_deleted` - Registry value removed
 
 ### User Database
 
+---
+
 Users are stored in the SQLite database at `Server/security_monitor.db` with:
-- Bcrypt hashed passwords (never stored in plain text)
+
+## 📊 Usage- Bcrypt hashed passwords (never stored in plain text)
+
 - Unique usernames and emails
-- Account enable/disable status
+
+### Dashboard Navigation- Account enable/disable status
+
 - Creation timestamps
 
-**Backup Recommendation:**
+1. **Login** - `http://localhost:3000/login`
+
+   - Default: `admin` / `admin123`**Backup Recommendation:**
+
 ```bash
-cp Server/security_monitor.db Server/security_monitor.db.backup
+
+2. **Dashboard** - Overview and statisticscp Server/security_monitor.db Server/security_monitor.db.backup
+
 ```
 
-For detailed user management documentation, see [USER_MANAGEMENT.md](USER_MANAGEMENT.md).
+3. **Nodes** - View all registered agents
 
----
+   - Click on a node to see detailed logsFor detailed user management documentation, see [USER_MANAGEMENT.md](USER_MANAGEMENT.md).
+
+
+
+4. **Events** - Browse by groups---
+
+   - Select group → Select node → View events
 
 ## Architecture
 
+5. **Policies** - Manage security policies (future feature)
+
 ### Backend Structure
 
+### Agent Management
+
 ```
-Server/
-├── app.py              # FastAPI main application & WebSocket endpoint
-├── websocket.py        # WebSocket connection manager
-├── authentication.py   # Password hashing & JWT token management
+
+#### Check Agent StatusServer/
+
+```powershell├── app.py              # FastAPI main application & WebSocket endpoint
+
+Get-Service -Name AegisAgent├── websocket.py        # WebSocket connection manager
+
+```├── authentication.py   # Password hashing & JWT token management
+
 ├── auth_routes.py      # Authentication endpoints (/auth/login, /auth/verify)
-├── database_setup.py   # Database initialization & admin account creation
-├── nodes.py            # Node management endpoints
-├── logs.py             # Event/log endpoints with broadcasting
-├── policies.py         # Policy management endpoints
-├── models.py           # SQLAlchemy database models (User, Node, Policy, Event)
-├── schemas.py          # Pydantic validation schemas
+
+#### Start/Stop Agent├── database_setup.py   # Database initialization & admin account creation
+
+```powershell├── nodes.py            # Node management endpoints
+
+Start-Service -Name AegisAgent├── logs.py             # Event/log endpoints with broadcasting
+
+Stop-Service -Name AegisAgent├── policies.py         # Policy management endpoints
+
+Restart-Service -Name AegisAgent├── models.py           # SQLAlchemy database models (User, Node, Policy, Event)
+
+```├── schemas.py          # Pydantic validation schemas
+
 ├── rules.py            # Rule engine for policy evaluation
-├── db.py               # Database connection & session management
-├── .env.example        # Environment variables template
-└── setup_and_start.sh  # Automated setup script
+
+#### Uninstall Agent├── db.py               # Database connection & session management
+
+```powershell├── .env.example        # Environment variables template
+
+cd C:\AegisAgent└── setup_and_start.sh  # Automated setup script
+
+.\UNINSTALL.ps1```
+
 ```
 
 **Key Technologies:**
-- **FastAPI** - Modern async web framework
-- **SQLAlchemy** - Async ORM for database operations
-- **SQLite** - Lightweight database (easily swappable)
-- **WebSockets** - Real-time bidirectional communication
+
+#### View Agent Logs- **FastAPI** - Modern async web framework
+
+```powershell- **SQLAlchemy** - Async ORM for database operations
+
+# Event Viewer- **SQLite** - Lightweight database (easily swappable)
+
+Get-EventLog -LogName Application -Source AegisAgent -Newest 50- **WebSockets** - Real-time bidirectional communication
+
 - **JWT** - Secure authentication tokens
-- **Pydantic** - Data validation and serialization
 
-### Frontend Structure
+# Or run in console mode for debugging- **Pydantic** - Data validation and serialization
+
+cd C:\AegisAgent
+
+.\AegisAgent.exe### Frontend Structure
 
 ```
-Dashboard/
+
+```
+
+---Dashboard/
+
 ├── src/
-│   ├── app/                    # Next.js App Router
+
+## 🔧 Development│   ├── app/                    # Next.js App Router
+
 │   │   ├── layout.tsx          # Root layout with providers
-│   │   ├── page.tsx            # Redirect to login
+
+### Server Development│   │   ├── page.tsx            # Redirect to login
+
 │   │   ├── globals.css         # Global styles + Tailwind
-│   │   ├── login/page.tsx      # Authentication page
-│   │   └── dashboard/
-│   │       ├── layout.tsx      # Dashboard layout with nav
-│   │       ├── page.tsx        # Dashboard home
-│   │       ├── nodes/page.tsx  # Node management
+
+```bash│   │   ├── login/page.tsx      # Authentication page
+
+cd Server│   │   └── dashboard/
+
+python -m venv aegis│   │       ├── layout.tsx      # Dashboard layout with nav
+
+aegis\Scripts\activate│   │       ├── page.tsx        # Dashboard home
+
+pip install -r requirments.txt│   │       ├── nodes/page.tsx  # Node management
+
 │   │       ├── policies/page.tsx  # Policy management
-│   │       └── events/page.tsx    # Event viewer
-│   │
-│   ├── components/
+
+# Run with auto-reload│   │       └── events/page.tsx    # Event viewer
+
+python app.py│   │
+
+```│   ├── components/
+
 │   │   ├── providers/          # React context providers
-│   │   │   ├── ThemeProvider.tsx
+
+**API Documentation:** `http://localhost:8000/docs`│   │   │   ├── ThemeProvider.tsx
+
 │   │   │   └── QueryProvider.tsx
-│   │   └── ui/                 # Reusable UI components
+
+### Dashboard Development│   │   └── ui/                 # Reusable UI components
+
 │   │       ├── StatCard.tsx
-│   │       ├── Skeleton.tsx
-│   │       ├── Modal.tsx
-│   │       └── CommandPalette.tsx
-│   │
-│   ├── lib/
+
+```bash│   │       ├── Skeleton.tsx
+
+cd Dashboard│   │       ├── Modal.tsx
+
+npm install│   │       └── CommandPalette.tsx
+
+npm run dev│   │
+
+```│   ├── lib/
+
 │   │   ├── api.ts              # Axios API client
-│   │   └── utils.ts            # Helper utilities
+
+**Dev Server:** `http://localhost:3000`│   │   └── utils.ts            # Helper utilities
+
 │   │
-│   ├── store/
+
+### Agent Development│   ├── store/
+
 │   │   └── index.ts            # Zustand state stores
-│   │
-│   └── types/
+
+```powershell│   │
+
+cd Agent│   └── types/
+
 │       └── index.ts            # TypeScript type definitions
-│
-├── package.json                # Dependencies
+
+# Build│
+
+dotnet build├── package.json                # Dependencies
+
 ├── tsconfig.json               # TypeScript configuration
-├── tailwind.config.ts          # Tailwind CSS config
-├── postcss.config.js           # PostCSS config
+
+# Run in debug mode├── tailwind.config.ts          # Tailwind CSS config
+
+dotnet run├── postcss.config.js           # PostCSS config
+
 └── next.config.js              # Next.js configuration
-```
 
-### Data Flow
+# Build release```
 
-```
+dotnet build -c Release
+
+```### Data Flow
+
+
+
+---```
+
 User Action → Dashboard → API Request → Backend → Database
-                ↓                           ↓
+
+## 📡 API Endpoints                ↓                           ↓
+
             Optimistic UI              WebSocket Broadcast
-                ↓                           ↓
-            Instant Feedback          All Connected Clients
-```
 
----
+### Authentication                ↓                           ↓
 
-## API Documentation
+- `POST /api/v1/auth/login` - User login            Instant Feedback          All Connected Clients
 
-### Authentication
+- `POST /api/v1/auth/register` - User registration```
 
-**POST** `/api/v1/auth/login` - Login and get JWT token
-```json
-{
-  "username": "admin",
+
+
+### Nodes---
+
+- `POST /api/v1/nodes/register` - Agent registration
+
+- `POST /api/v1/nodes/heartbeat` - Agent heartbeat## API Documentation
+
+- `GET /api/v1/nodes` - List all nodes
+
+- `GET /api/v1/nodes/{id}` - Get node details### Authentication
+
+
+
+### Events**POST** `/api/v1/auth/login` - Login and get JWT token
+
+- `POST /api/v1/logs/ingest` - Ingest events from agent```json
+
+- `GET /api/v1/logs` - Query events{
+
+- `GET /api/v1/logs/node/{node_id}` - Get events for specific node  "username": "admin",
+
   "password": "your_generated_password"
-}
+
+---}
+
 ```
+
+## 🐛 Troubleshooting
 
 **Response:**
-```json
+
+### Server Issues```json
+
 {
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer"
-}
-```
+
+**Server won't start:**  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+
+- Check if port 8000 is available  "token_type": "bearer"
+
+- Verify Python version: `python --version`}
+
+- Check database file permissions```
+
+- Review `.env` configuration
 
 **GET** `/api/v1/auth/verify` - Verify current token
-```
-Authorization: Bearer <token>
-```
 
-### Nodes
+**Database errors:**```
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/nodes` | List all nodes |
-| POST | `/api/v1/nodes/register` | Register a new node |
-| PUT | `/api/v1/nodes/{node_id}` | Update node details |
+- Delete `aegis.db` and run `python database_setup.py` againAuthorization: Bearer <token>
+
+- Check file permissions```
+
+
+
+### Dashboard Issues### Nodes
+
+
+
+**Dashboard won't connect to server:**| Method | Endpoint | Description |
+
+- Verify `NEXT_PUBLIC_API_URL` in `.env.local`|--------|----------|-------------|
+
+- Check if server is running on specified URL| GET | `/api/v1/nodes` | List all nodes |
+
+- Check browser console for CORS errors| POST | `/api/v1/nodes/register` | Register a new node |
+
+- Verify firewall settings| PUT | `/api/v1/nodes/{node_id}` | Update node details |
+
 | DELETE | `/api/v1/nodes/{node_id}` | Delete a node |
 
-### Policies
+**Login fails:**
 
-| Method | Endpoint | Description |
+- Check server logs### Policies
+
+- Verify server is running
+
+- Check network connectivity| Method | Endpoint | Description |
+
 |--------|----------|-------------|
-| GET | `/api/v1/policies` | List all policies |
+
+### Agent Issues| GET | `/api/v1/policies` | List all policies |
+
 | POST | `/api/v1/policies` | Create a new policy |
-| DELETE | `/api/v1/policies/{policy_id}` | Delete a policy |
-| POST | `/api/v1/policies/assign` | Assign policy to node |
 
-### Events/Logs
+**Agent won't register:**| DELETE | `/api/v1/policies/{policy_id}` | Delete a policy |
+
+- Verify server URL in `appsettings.json`| POST | `/api/v1/policies/assign` | Assign policy to node |
+
+- Check API key matches server's `AGENT_API_KEY`
+
+- Test connectivity: `Test-NetConnection -ComputerName SERVER_IP -Port 8000`### Events/Logs
+
+- Check firewall rules
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/logs` | List events with filters |
-| POST | `/api/v1/logs/ingest` | Ingest a new event |
 
-### WebSocket
+**Service won't start:**|--------|----------|-------------|
 
-**WS** `/ws` - Real-time updates
-- Broadcasts: `node_created`, `node_updated`, `node_deleted`, `event_created`
+- Check Event Viewer for errors| GET | `/api/v1/logs` | List events with filters |
 
-**Interactive API Documentation:** http://localhost:8000/docs
+- Verify `appsettings.json` exists in same folder as `AegisAgent.exe`| POST | `/api/v1/logs/ingest` | Ingest a new event |
+
+- Run as Administrator
+
+- Check server accessibility### WebSocket
+
+
+
+**No events in dashboard:****WS** `/ws` - Real-time updates
+
+- Verify agent service is running: `Get-Service -Name AegisAgent`- Broadcasts: `node_created`, `node_updated`, `node_deleted`, `event_created`
+
+- Check collectors are enabled in `appsettings.json`
+
+- Review agent logs**Interactive API Documentation:** http://localhost:8000/docs
+
+- Verify server is receiving data
 
 ---
 
-## Deployment
+**High CPU usage:**
 
-### Ubuntu Server Deployment
+Increase scan intervals in `appsettings.json`:## Deployment
 
-#### 1. Install Dependencies
+```json
+
+"ProcessMonitor": { "ScanIntervalSeconds": 30 },### Ubuntu Server Deployment
+
+"NetworkMonitor": { "ScanIntervalSeconds": 60 },
+
+"RegistryMonitor": { "ScanIntervalSeconds": 120 }#### 1. Install Dependencies
+
+```
 
 ```bash
-# Update system
+
+---# Update system
+
 sudo apt update && sudo apt upgrade -y
 
+## 🔒 Security Considerations
+
 # Install Python
-sudo apt install python3 python3-pip python3-venv -y
 
-# Install Node.js 20
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -bash -
-sudo apt install nodejs -y
+### Production Deploymentsudo apt install python3 python3-pip python3-venv -y
 
-# Install git
-sudo apt install git -y
-```
+
+
+#### Server# Install Node.js 20
+
+- ✅ Change `SECRET_KEY` in `.env` to a strong random valuecurl -fsSL https://deb.nodesource.com/setup_20.x | sudo -bash -
+
+- ✅ Change `AGENT_API_KEY` to a strong random valuesudo apt install nodejs -y
+
+- ✅ Use HTTPS (configure reverse proxy like Nginx)
+
+- ✅ Enable firewall rules (allow only necessary ports)# Install git
+
+- ✅ Use strong database passwordssudo apt install git -y
+
+- ✅ Regularly backup `aegis.db````
+
+- ✅ Change default admin password immediately
 
 #### 2. Clone and Setup
 
-```bash
-# Clone repository
-git clone https://github.com/SatvikVishwakarma/Aegis.git
-cd Aegis
+#### Dashboard
 
-# Quick setup with automated script (RECOMMENDED)
-cd Server
-chmod +x setup_and_start.sh
-./setup_and_start.sh
-# Save the auto-generated admin password!
+- ✅ Use HTTPS in production```bash
 
-# OR manual setup:
+- ✅ Update `NEXT_PUBLIC_API_URL` to use HTTPS# Clone repository
+
+- ✅ Enable rate limitinggit clone https://github.com/SatvikVishwakarma/Aegis.git
+
+- ✅ Use environment variables for sensitive datacd Aegis
+
+
+
+#### Agent# Quick setup with automated script (RECOMMENDED)
+
+- ✅ Protect the deployment package (contains API key)cd Server
+
+- ✅ Use different API keys for different environmentschmod +x setup_and_start.sh
+
+- ✅ Start with "alert" mode before enabling "kill" mode./setup_and_start.sh
+
+- ✅ Test in staging environment first# Save the auto-generated admin password!
+
+- ✅ Rotate API keys periodically
+
+- ✅ Secure communication channel (use HTTPS)# OR manual setup:
+
 # Setup backend
-python3 -m venv aegis
+
+### Process Control Safetypython3 -m venv aegis
+
 source aegis/bin/activate
-pip install -r requirments.txt
 
-# Initialize database and create admin user
-python database_setup.py
-# ⚠️ SAVE THE DISPLAYED PASSWORD!
+⚠️ **Process Control "kill" mode is DANGEROUS!**pip install -r requirments.txt
 
-# Setup frontend
+
+
+**Recommended Testing Path:**# Initialize database and create admin user
+
+1. **Week 1**: Run with `Action: "alert"` - Monitor detectionspython database_setup.py
+
+2. **Week 2**: Review all alerts, adjust blacklist# ⚠️ SAVE THE DISPLAYED PASSWORD!
+
+3. **Week 3**: Test `Action: "suspend"` in staging
+
+4. **Week 4**: Deploy `Action: "kill"` in production (if needed)# Setup frontend
+
 cd ../Dashboard
-npm install
+
+**Start conservative, increase enforcement gradually!**npm install
+
 npm run build
-```
 
-**⚠️ CRITICAL: Save the admin password displayed during setup!**
+---```
 
-#### 3. Create Systemd Services
 
-**Backend Service** (`/etc/systemd/system/aegis-backend.service`):
-```ini
+
+## 📈 Performance**⚠️ CRITICAL: Save the admin password displayed during setup!**
+
+
+
+### Server#### 3. Create Systemd Services
+
+- CPU: ~5-10% (idle), ~20-30% (under load)
+
+- RAM: ~100-200 MB**Backend Service** (`/etc/systemd/system/aegis-backend.service`):
+
+- Disk: Minimal (database grows with events)```ini
+
 [Unit]
-Description=Aegis Backend Server
-After=network.target
+
+### DashboardDescription=Aegis Backend Server
+
+- Runs in browserAfter=network.target
+
+- Minimal server resources (static site)
 
 [Service]
-Type=simple
-User=your-username
-WorkingDirectory=/home/your-username/Aegis
-Environment="PATH=/home/your-username/Aegis/venv/bin"
-ExecStart=/home/your-username/Aegis/venv/bin/python Server/app.py
+
+### AgentType=simple
+
+- CPU: <1% (normal operation)User=your-username
+
+- RAM: ~50-100 MBWorkingDirectory=/home/your-username/Aegis
+
+- Network: ~10-50 KB/s (depending on event volume)Environment="PATH=/home/your-username/Aegis/venv/bin"
+
+- Disk: No persistent storageExecStart=/home/your-username/Aegis/venv/bin/python Server/app.py
+
 Restart=always
 
+---
+
 [Install]
-WantedBy=multi-user.target
+
+## 🔄 Update WorkflowWantedBy=multi-user.target
+
 ```
 
-**Frontend Service** (`/etc/systemd/system/aegis-dashboard.service`):
-```ini
-[Unit]
-Description=Aegis Dashboard
-After=network.target aegis-backend.service
+### Updating Server
+
+```bash**Frontend Service** (`/etc/systemd/system/aegis-dashboard.service`):
+
+cd Server```ini
+
+git pull[Unit]
+
+pip install -r requirments.txtDescription=Aegis Dashboard
+
+python app.pyAfter=network.target aegis-backend.service
+
+```
 
 [Service]
-Type=simple
-User=your-username
-WorkingDirectory=/home/your-username/Aegis/Dashboard
-ExecStart=/usr/bin/npm start
-Restart=always
-Environment=NODE_ENV=production
-Environment=PORT=3000
 
-[Install]
-WantedBy=multi-user.target
+### Updating DashboardType=simple
+
+```bashUser=your-username
+
+cd DashboardWorkingDirectory=/home/your-username/Aegis/Dashboard
+
+git pullExecStart=/usr/bin/npm start
+
+npm installRestart=always
+
+npm run buildEnvironment=NODE_ENV=production
+
+npm start  # For productionEnvironment=PORT=3000
+
 ```
 
-#### 4. Enable and Start Services
+[Install]
 
-```bash
+### Updating AgentsWantedBy=multi-user.target
+
+1. Build new package: `.\build-agent-package.ps1````
+
+2. Deploy to endpoints
+
+3. Run `INSTALL.ps1` (will stop old service, install new version)#### 4. Enable and Start Services
+
+
+
+---```bash
+
 sudo systemctl daemon-reload
-sudo systemctl enable aegis-backend aegis-dashboard
+
+## 📞 Supportsudo systemctl enable aegis-backend aegis-dashboard
+
 sudo systemctl start aegis-backend aegis-dashboard
-sudo systemctl status aegis-backend aegis-dashboard
+
+### Common Commands Referencesudo systemctl status aegis-backend aegis-dashboard
+
 ```
 
-#### 5. Configure Nginx (Optional but Recommended)
+#### Server
 
-```nginx
+```bash#### 5. Configure Nginx (Optional but Recommended)
+
+# Start server
+
+python app.py```nginx
+
 server {
-    listen 80;
-    server_name your-domain.com;
 
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
+# Reset database    listen 80;
+
+python database_setup.py    server_name your-domain.com;
+
+
+
+# Check logs    location / {
+
+tail -f aegis.db  # View database activity        proxy_pass http://localhost:3000;
+
+```        proxy_http_version 1.1;
+
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-    }
+
+#### Dashboard        proxy_set_header Connection 'upgrade';
+
+```bash        proxy_set_header Host $host;
+
+# Development    }
+
+npm run dev
 
     location /api {
-        proxy_pass http://localhost:8000;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-    }
 
-    location /ws {
-        proxy_pass http://localhost:8000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
+# Production build        proxy_pass http://localhost:8000;
+
+npm run build        proxy_http_version 1.1;
+
+npm start        proxy_set_header Host $host;
+
+```    }
+
+
+
+#### Agent    location /ws {
+
+```powershell        proxy_pass http://localhost:8000;
+
+# Build package        proxy_http_version 1.1;
+
+.\build-agent-package.ps1        proxy_set_header Upgrade $http_upgrade;
+
         proxy_set_header Connection "upgrade";
-    }
-}
+
+# Check service status    }
+
+Get-Service -Name AegisAgent}
+
 ```
 
-#### 6. Configure Firewall
+# View logs
 
-```bash
-sudo ufw allow 22/tcp    # SSH
-sudo ufw allow 80/tcp    # HTTP
+Get-EventLog -LogName Application -Source AegisAgent -Newest 50#### 6. Configure Firewall
+
+
+
+# Debug mode (console)```bash
+
+.\AegisAgent.exesudo ufw allow 22/tcp    # SSH
+
+```sudo ufw allow 80/tcp    # HTTP
+
 sudo ufw allow 443/tcp   # HTTPS
-sudo ufw enable
+
+---sudo ufw enable
+
 ```
+
+## 🎯 Quick Reference
 
 ## Troubleshooting
 
-### Environment Variable Errors
+### Ports
+
+- **Server**: 8000 (default, configurable)### Environment Variable Errors
+
+- **Dashboard**: 3000 (development), 80/443 (production)
 
 **Error: `ValueError: SECRET_KEY environment variable not set`**
 
-This error means the required environment variables for JWT authentication are missing.
+### Default Credentials
 
-**Solution 1 (Automatic - Recommended):**
-```bash
-cd Server
-./setup_and_start.sh
-```
+- **Dashboard Login**: admin / admin123 (⚠️ CHANGE IN PRODUCTION!)This error means the required environment variables for JWT authentication are missing.
+
+
+
+### File Sizes**Solution 1 (Automatic - Recommended):**
+
+- **Server**: ~50 MB (with dependencies)```bash
+
+- **Dashboard**: ~200 MB (with node_modules)cd Server
+
+- **Agent Package**: ~20-25 MB (compressed ZIP)./setup_and_start.sh
+
+- **Agent Installed**: ~70-80 MB (includes .NET runtime)```
+
 The script will automatically create a `.env` file with secure random keys.
 
-**Solution 2 (Manual):**
-```bash
-cd Server
+### Requirements
 
-# Generate secure random keys
+- **Server**: Python 3.8+, ~200 MB disk**Solution 2 (Manual):**
+
+- **Dashboard**: Node.js 18+, ~500 MB disk```bash
+
+- **Agent**: Windows 10+, No .NET required on endpoints!cd Server
+
+
+
+---# Generate secure random keys
+
 python3 -c "import secrets; print('SECRET_KEY=' + secrets.token_urlsafe(32))" >> .env
-python3 -c "import secrets; print('AGENT_API_KEY=' + secrets.token_urlsafe(32))" >> .env
 
-# Add other required variables
+## 🚀 Production Checklistpython3 -c "import secrets; print('AGENT_API_KEY=' + secrets.token_urlsafe(32))" >> .env
+
+
+
+Before deploying to production:# Add other required variables
+
 echo "ALGORITHM=HS256" >> .env
-echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> .env
-echo "DATABASE_URL=sqlite+aiosqlite:///./aegis.db" >> .env
-```
 
-For detailed setup instructions, see [Server/ENVIRONMENT_SETUP.md](Server/ENVIRONMENT_SETUP.md)
+### Serverecho "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> .env
 
-### Backend Issues
+- [ ] Change `SECRET_KEY` in `.env`echo "DATABASE_URL=sqlite+aiosqlite:///./aegis.db" >> .env
 
-**Backend not starting?**
+- [ ] Change `AGENT_API_KEY` in `.env````
+
+- [ ] Change default admin password
+
+- [ ] Setup HTTPS (reverse proxy)For detailed setup instructions, see [Server/ENVIRONMENT_SETUP.md](Server/ENVIRONMENT_SETUP.md)
+
+- [ ] Configure firewall
+
+- [ ] Setup database backups### Backend Issues
+
+- [ ] Enable logging
+
+- [ ] Test API endpoints**Backend not starting?**
+
 ```bash
-# Check Python version
-python3 --version  # Should be 3.9+
 
-# Reinstall dependencies (from Server directory)
-cd Server
-pip install -r requirments.txt --force-reinstall
+### Dashboard# Check Python version
 
-# Check logs
-python app.py
-```
+- [ ] Update `NEXT_PUBLIC_API_URL` to production serverpython3 --version  # Should be 3.9+
 
-### Frontend Issues
+- [ ] Build production version: `npm run build`
 
-**Frontend not starting?**
-```bash
+- [ ] Setup HTTPS# Reinstall dependencies (from Server directory)
+
+- [ ] Configure web server (Nginx/Apache)cd Server
+
+- [ ] Test all pagespip install -r requirments.txt --force-reinstall
+
+
+
+### Agent# Check logs
+
+- [ ] Test in staging environmentpython app.py
+
+- [ ] Verify all collectors work```
+
+- [ ] Test service installation
+
+- [ ] Test service recovery (restart on failure)### Frontend Issues
+
+- [ ] Start with "alert" mode
+
+- [ ] Monitor for false positives**Frontend not starting?**
+
+- [ ] Document deployment procedure```bash
+
 # Check Node version
-node --version  # Should be 18+
 
-# Clear cache
+---node --version  # Should be 18+
+
+
+
+**Aegis Security Monitoring System - Complete Setup Guide**# Clear cache
+
 rm -rf node_modules package-lock.json
 npm install
 

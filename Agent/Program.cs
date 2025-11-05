@@ -12,6 +12,10 @@ namespace AegisAgent
         static async Task Main(string[] args)
         {
             var host = Host.CreateDefaultBuilder(args)
+                .UseWindowsService(options =>
+                {
+                    options.ServiceName = "AegisAgent";
+                })
                 .ConfigureAppConfiguration((context, config) =>
                 {
                     config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
@@ -25,10 +29,13 @@ namespace AegisAgent
                     services.AddSingleton<IApiClient, ApiClient>();
                     services.AddSingleton<INodeManager, NodeManager>();
                     services.AddSingleton<IEventQueue, EventQueue>();
+                    services.AddSingleton<IPolicyManager, PolicyManager>();
 
                     // Register collectors
                     services.AddSingleton<IEventCollector, ProcessMonitorCollector>();
                     services.AddSingleton<IEventCollector, NetworkMonitorCollector>();
+                    services.AddSingleton<IEventCollector, RegistryMonitorCollector>();
+                    services.AddSingleton<IEventCollector, ProcessControlCollector>();
 
                     // Register hosted service
                     services.AddHostedService<AgentService>();
