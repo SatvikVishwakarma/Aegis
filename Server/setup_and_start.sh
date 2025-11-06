@@ -56,8 +56,12 @@ fi
 
 # Step 2: Create virtual environment
 echo "[Step 2/7] Creating virtual environment 'aegis'..."
-python3 -m venv aegis
-echo "✓ Virtual environment created successfully"
+if [ ! -d "aegis" ]; then
+    python3 -m venv aegis
+    echo "✓ Virtual environment created successfully"
+else
+    echo "✓ Virtual environment already exists"
+fi
 echo ""
 
 # Step 3: Activate virtual environment and install dependencies
@@ -76,29 +80,29 @@ echo ""
 # Step 5: Initialize database
 echo "[Step 5/7] Initializing database..."
 
-# Remove old database if it exists to start fresh
+# Check if database already exists
 if [ -f aegis.db ]; then
-    echo "  Removing old database file..."
-    rm -f aegis.db
-fi
+    echo "  Database already exists, skipping initialization..."
+    echo "  ⚠️  To recreate database, manually delete aegis.db first"
+else
+    # Run database_setup.py and capture both stdout and stderr
+    INIT_OUTPUT=$(python database_setup.py 2>&1)
+    echo "$INIT_OUTPUT"
 
-# Run database_setup.py and capture the admin password
-INIT_OUTPUT=$(python database_setup.py)
-echo "$INIT_OUTPUT"
+    # Extract the password from output (look for "Password: xxx" pattern)
+    ADMIN_PASSWORD=$(echo "$INIT_OUTPUT" | grep -oP 'Password:\s+\K\S+' || true)
 
-# Extract the password from output
-ADMIN_PASSWORD=$(echo "$INIT_OUTPUT" | grep "Password:" | awk '{print $2}')
-
-# Ensure database has correct permissions
-if [ -f aegis.db ]; then
-    chmod 664 aegis.db
-    echo "✓ Database permissions set correctly"
+    # Ensure database has correct permissions
+    if [ -f aegis.db ]; then
+        chmod 664 aegis.db
+        echo "✓ Database created successfully"
+    fi
 fi
 
 echo ""
 
 # Step 6: User Management (Mandatory)
-echo "[Step 6/7] Admin Account Created"
+echo "[Step 6/7] Admin Account Status"
 echo "=========================================="
 
 if [ -n "$ADMIN_PASSWORD" ]; then
@@ -118,7 +122,11 @@ if [ -n "$ADMIN_PASSWORD" ]; then
     echo ""
     read -p "Press Enter once you have saved the password..."
 else
-    echo "Admin user already exists from previous setup"
+    echo "✓ Admin user already exists from previous setup"
+    echo ""
+    echo "If you forgot the password, run:"
+    echo "  source aegis/bin/activate"
+    echo "  python reset_admin_password.py"
 fi
 
 echo ""
