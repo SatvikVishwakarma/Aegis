@@ -38,7 +38,7 @@ export default function AgentsPage() {
 
   const fetchTemplateInfo = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('aegis_token');
       if (!token) return;
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/agents/template-info`, {
@@ -58,7 +58,7 @@ export default function AgentsPage() {
 
   const fetchExistingGroups = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('aegis_token');
       if (!token) return;
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/nodes`, {
@@ -85,7 +85,7 @@ export default function AgentsPage() {
     setIsDownloading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('aegis_token');
       if (!token) {
         throw new Error('Not authenticated. Please login again.');
       }
@@ -130,7 +130,7 @@ export default function AgentsPage() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      setSuccess(`✅ Package downloaded successfully! File: ${filename}`);
+      setSuccess(`Package downloaded successfully! File: ${filename}`);
 
     } catch (err: any) {
       setError(err.message || 'Failed to download agent package');
