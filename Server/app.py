@@ -13,6 +13,7 @@ import logs
 import nodes
 import policies
 import auth_routes  # NEW authentication
+import agent_routes  # Agent package builder
 from db import engine
 from models import Base
 from websocket import manager
@@ -75,6 +76,7 @@ app.include_router(nodes.router, prefix=API_V1_PREFIX)
 app.include_router(logs.router, prefix=API_V1_PREFIX)
 app.include_router(policies.router, prefix=API_V1_PREFIX)
 app.include_router(auth_routes.router, prefix=API_V1_PREFIX)  # NEW authentication
+app.include_router(agent_routes.router, prefix=API_V1_PREFIX)  # Agent package builder
 
 
 # --- Health Check Endpoint ---

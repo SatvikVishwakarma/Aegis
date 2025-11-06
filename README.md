@@ -42,13 +42,22 @@ It unifies a **FastAPI backend**, a **Next.js dashboard**, and a **Windows Agent
 - Enforce process actions: **alert**, **suspend**, or **kill**.
 
 ### 5. Agent Capabilities
-- Process creation and termination detection.
-- Registry modification monitoring in critical keys.
-- Network connection tracking.
-- Automatic agent registration on first contact.
-- Operates as a persistent Windows Service with auto-start.
+- **Process Control**: Kill, suspend, or alert on blacklisted processes (mimikatz, psexec, etc.)
+- **Registry Monitoring**: Track changes to Run keys, Services, and Winlogon
+- **Process Monitoring**: Detect process creation and termination
+- **Network Monitoring**: Track network connections
+- **Windows Service**: Persistent operation with auto-start and recovery
+- **Self-Contained**: No .NET runtime installation required on endpoints
 
-### 6. Security
+### 6. One-Click Agent Deployment
+- **Dashboard-Based Builder**: Generate customized agent packages directly from the web UI
+- **Pre-Built Template**: Server uses pre-compiled agent binaries (no compilation needed)
+- **Automatic Configuration**: Server URL, API key, and group assignment injected automatically
+- **Ready-to-Deploy**: Download ZIP contains executable, config, and installation scripts
+- **Fast Downloads**: ~20-25 MB compressed packages generated in seconds
+- **Multi-Endpoint**: Build packages for different groups with different configurations
+
+### 7. Security
 - JWT-based authentication with bcrypt password hashing.
 - API key validation for agent communication.
 - Encrypted configuration files and token storage.
@@ -138,24 +147,48 @@ npm run dev
 
 ### 3. Agent Deployment (Windows)
 
-#### Build Package
+#### Method 1: Dashboard Builder (Recommended)
+
+1. **Login to Dashboard** at http://localhost:3000
+2. **Navigate to** "Download Agent" in the top menu
+3. **Fill in the form:**
+   - Server URL: Auto-filled (e.g., http://192.168.1.100:8000)
+   - Node Group: Select existing or create new (e.g., "production", "workstations")
+4. **Click "Download Agent Package"**
+5. **Extract ZIP** on target endpoint (e.g., `C:\AegisAgent\`)
+6. **Run PowerShell as Administrator** and execute:
+   ```powershell
+   cd C:\AegisAgent
+   .\INSTALL.ps1
+   ```
+7. **Choose installation type:**
+   - Option 1: Windows Service (auto-start, recommended for production)
+   - Option 2: Console Mode (for testing and troubleshooting)
+
+**The endpoint will appear in the Dashboard's Nodes page within 30 seconds.**
+
+#### Method 2: Manual Build (For Development)
+
 ```powershell
 cd Agent
-.uild-agent-package.ps1
+.\build-agent-package.ps1
 ```
 
-#### Deploy on Endpoint
+This will:
+- Prompt for Server IP, API Key, and Group
+- Build self-contained Windows executable
+- Generate installation scripts
+- Create timestamped ZIP file in `publish/` folder
+
+#### Deploy Manually Built Package
 ```powershell
+# Extract package to permanent location
+Expand-Archive -Path AegisAgent-*.zip -DestinationPath C:\AegisAgent
+
+# Install as Windows Service
 cd C:\AegisAgent
 .\INSTALL.ps1
 ```
-
-Choose installation type:
-- Option 1: Windows Service (auto-start, recommended)
-- Option 2: Console Mode (testing)
-
-**The agent will automatically appear on the Dashboard’s Nodes page.**
-
 ---
 
 ## Environment Configuration

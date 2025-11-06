@@ -56,6 +56,7 @@ export default function DashboardLayout({
                 <NavLink href="/dashboard/nodes">Nodes</NavLink>
                 <NavLink href="/dashboard/policies">Policies</NavLink>
                 <NavLink href="/dashboard/events">Events</NavLink>
+                <NavLink href="/dashboard/agents">Download Agent</NavLink>
               </div>
             </div>
 
