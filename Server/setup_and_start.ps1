@@ -50,7 +50,7 @@ if (-not (Test-Path ".env")) {
     
     $envLines | Out-File -FilePath ".env" -Encoding UTF8
     
-    Write-Host "? .env file created with secure random keys" -ForegroundColor Green
+    Write-Host "[OK] .env file created with secure random keys" -ForegroundColor Green
     Write-Host "  SECRET_KEY: $($SECRET_KEY.Substring(0, 20))..." -ForegroundColor Gray
     Write-Host "  AGENT_API_KEY: $($AGENT_API_KEY.Substring(0, 20))..." -ForegroundColor Gray
     Write-Host "  DASHBOARD_API_KEY: $($DASHBOARD_API_KEY.Substring(0, 20))..." -ForegroundColor Gray
@@ -64,9 +64,9 @@ if (-not (Test-Path ".env")) {
 Write-Host "[Step 2/7] Creating virtual environment 'aegis'..." -ForegroundColor Yellow
 if (-not (Test-Path "aegis")) {
     python -m venv aegis
-    Write-Host "? Virtual environment created successfully" -ForegroundColor Green
+    Write-Host "[OK] Virtual environment created successfully" -ForegroundColor Green
 } else {
-    Write-Host "? Virtual environment already exists" -ForegroundColor Green
+    Write-Host "[OK] Virtual environment already exists" -ForegroundColor Green
 }
 Write-Host ""
 
@@ -75,7 +75,7 @@ Write-Host "[Step 3/7] Installing dependencies from requirments.txt..." -Foregro
 & ".\aegis\Scripts\Activate.ps1"
 python -m pip install --upgrade pip
 pip install -r requirments.txt
-Write-Host "? Dependencies installed successfully" -ForegroundColor Green
+Write-Host "[OK] Dependencies installed successfully" -ForegroundColor Green
 Write-Host ""
 
 # Step 4: Show installed packages
@@ -86,44 +86,45 @@ Write-Host ""
 # Step 5: Initialize database
 Write-Host "[Step 5/7] Initializing database..." -ForegroundColor Yellow
 
-# Remove old database if it exists to start fresh
+# Check if database already exists
 if (Test-Path "aegis.db") {
-    Write-Host "  Removing old database file..." -ForegroundColor Gray
-    Remove-Item "aegis.db" -Force
-}
-
-# Run database_setup.py and capture the admin password
-$initOutput = & python database_setup.py 2>&1 | Out-String
-Write-Host $initOutput
-
-# Extract the password from output
-$passwordMatch = $initOutput | Select-String -Pattern "Password:\s+(\S+)"
-if ($passwordMatch) {
-    $adminPassword = $passwordMatch.Matches[0].Groups[1].Value
-} else {
+    Write-Host "  Database already exists, skipping initialization..." -ForegroundColor Gray
+    Write-Host "  [!] To recreate database, manually delete aegis.db first" -ForegroundColor Yellow
     $adminPassword = $null
-}
+} else {
+    # Run database_setup.py and capture the admin password
+    $initOutput = & python database_setup.py 2>&1 | Out-String
+    Write-Host $initOutput
 
-# Ensure database has correct permissions (Windows doesn't need chmod)
-if (Test-Path "aegis.db") {
-    Write-Host "? Database created successfully" -ForegroundColor Green
+    # Extract the password from output
+    $passwordMatch = $initOutput | Select-String -Pattern "Password:\s+(\S+)"
+    if ($passwordMatch) {
+        $adminPassword = $passwordMatch.Matches[0].Groups[1].Value
+    } else {
+        $adminPassword = $null
+    }
+
+    # Ensure database has correct permissions (Windows doesn't need chmod)
+    if (Test-Path "aegis.db") {
+        Write-Host "[OK] Database created successfully" -ForegroundColor Green
+    }
 }
 
 Write-Host ""
 
 # Step 6: User Management (Mandatory)
-Write-Host "[Step 6/7] Admin Account Created" -ForegroundColor Yellow
+Write-Host "[Step 6/7] Admin Account Status" -ForegroundColor Yellow
 Write-Host "==========================================" -ForegroundColor Cyan
 
 if ($adminPassword) {
     Write-Host ""
-    Write-Host "?? YOUR ADMIN CREDENTIALS:" -ForegroundColor Green
+    Write-Host "[!] YOUR ADMIN CREDENTIALS:" -ForegroundColor Green
     Write-Host "==========================================" -ForegroundColor Cyan
     Write-Host "  Username: admin" -ForegroundColor White
     Write-Host "  Password: $adminPassword" -ForegroundColor Yellow
     Write-Host "==========================================" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "??  IMPORTANT - SAVE THIS PASSWORD NOW!" -ForegroundColor Red
+    Write-Host "[!] IMPORTANT - SAVE THIS PASSWORD NOW!" -ForegroundColor Red
     Write-Host "  - Write it down or save it in a password manager" -ForegroundColor White
     Write-Host "  - You'll need this to:" -ForegroundColor White
     Write-Host "    * Login to the dashboard" -ForegroundColor White
@@ -132,7 +133,11 @@ if ($adminPassword) {
     Write-Host ""
     Read-Host "Press Enter once you have saved the password"
 } else {
-    Write-Host "Admin user already exists from previous setup" -ForegroundColor Gray
+    Write-Host "[OK] Admin user already exists from previous setup" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "If you forgot the password, run:" -ForegroundColor Yellow
+    Write-Host "  .\aegis\Scripts\Activate.ps1" -ForegroundColor White
+    Write-Host "  python reset_admin_password.py" -ForegroundColor White
 }
 
 Write-Host ""
