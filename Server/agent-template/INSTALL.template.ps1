@@ -40,6 +40,19 @@ if ($choice -eq "1") {
     Write-Host ""
     Write-Host "Installing as Windows Service..." -ForegroundColor Cyan
     
+    # Add firewall rules
+    Write-Host "Configuring Windows Firewall..." -ForegroundColor Cyan
+    
+    # Remove existing rules if they exist
+    Get-NetFirewallRule -DisplayName "Aegis Agent*" -ErrorAction SilentlyContinue | Remove-NetFirewallRule -ErrorAction SilentlyContinue
+    
+    # Add new firewall rules
+    New-NetFirewallRule -DisplayName "Aegis Agent - Outbound" -Direction Outbound -Program "$exePath" -Action Allow -ErrorAction SilentlyContinue | Out-Null
+    New-NetFirewallRule -DisplayName "Aegis Agent - Inbound" -Direction Inbound -Program "$exePath" -Action Allow -ErrorAction SilentlyContinue | Out-Null
+    
+    Write-Host "Firewall rules configured successfully" -ForegroundColor Green
+    Write-Host ""
+    
     $serviceName = "AegisAgent"
     $existingService = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
     

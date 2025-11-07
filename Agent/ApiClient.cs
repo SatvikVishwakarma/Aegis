@@ -39,7 +39,7 @@ namespace AegisAgent
                 "application/json"
             );
 
-            var response = await _httpClient.PostAsync("/nodes/register", content);
+            var response = await _httpClient.PostAsync("/api/v1/nodes/register", content);
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync();
@@ -55,7 +55,7 @@ namespace AegisAgent
                 "application/json"
             );
 
-            var response = await _httpClient.PostAsync("/nodes/heartbeat", content);
+            var response = await _httpClient.PostAsync("/api/v1/nodes/heartbeat", content);
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync();
@@ -71,7 +71,7 @@ namespace AegisAgent
                 "application/json"
             );
 
-            var response = await _httpClient.PostAsync("/logs/ingest", content);
+            var response = await _httpClient.PostAsync("/api/v1/logs/ingest", content);
             response.EnsureSuccessStatusCode();
         }
     }
