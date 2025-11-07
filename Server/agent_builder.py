@@ -123,7 +123,11 @@ class AgentPackageBuilder:
         """Copy all files from template directory to destination"""
         for item in self.template_dir.iterdir():
             # Skip template files (they'll be processed and renamed)
-            if item.name.endswith('.template.json') or item.name.endswith('.template.ps1') or item.name.endswith('.template.txt'):
+            # Also skip appsettings.json as it will be generated from template
+            if (item.name.endswith('.template.json') or 
+                item.name.endswith('.template.ps1') or 
+                item.name.endswith('.template.txt') or
+                item.name == 'appsettings.json'):
                 continue
             
             dest = dest_dir / item.name

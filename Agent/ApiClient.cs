@@ -18,6 +18,7 @@ namespace AegisAgent
         private readonly HttpClient _httpClient;
         private readonly string _apiUrl;
         private readonly string _apiKey;
+        private readonly JsonSerializerSettings _jsonSettings;
 
         public ApiClient(IConfiguration configuration)
         {
@@ -29,12 +30,17 @@ namespace AegisAgent
                 BaseAddress = new Uri(_apiUrl)
             };
             _httpClient.DefaultRequestHeaders.Add("X-API-Key", _apiKey);
+            
+            _jsonSettings = new JsonSerializerSettings
+            {
+                ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+            };
         }
 
         public async Task<NodeInfo> RegisterNodeAsync(NodeRegistrationRequest request)
         {
             var content = new StringContent(
-                JsonConvert.SerializeObject(request),
+                JsonConvert.SerializeObject(request, _jsonSettings),
                 Encoding.UTF8,
                 "application/json"
             );
@@ -43,14 +49,15 @@ namespace AegisAgent
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<NodeInfo>(json) 
+            
+            return JsonConvert.DeserializeObject<NodeInfo>(json, _jsonSettings) 
                 ?? throw new Exception("Failed to deserialize node info");
         }
 
         public async Task<NodeInfo> SendHeartbeatAsync(HeartbeatRequest request)
         {
             var content = new StringContent(
-                JsonConvert.SerializeObject(request),
+                JsonConvert.SerializeObject(request, _jsonSettings),
                 Encoding.UTF8,
                 "application/json"
             );
@@ -59,14 +66,14 @@ namespace AegisAgent
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<NodeInfo>(json)
+            return JsonConvert.DeserializeObject<NodeInfo>(json, _jsonSettings)
                 ?? throw new Exception("Failed to deserialize node info");
         }
 
         public async Task SendEventAsync(EventIngestRequest request)
         {
             var content = new StringContent(
-                JsonConvert.SerializeObject(request),
+                JsonConvert.SerializeObject(request, _jsonSettings),
                 Encoding.UTF8,
                 "application/json"
             );

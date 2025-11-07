@@ -7,6 +7,21 @@
     <Nullable>enable</Nullable>
     <AssemblyName>AegisAgent</AssemblyName>
     <RootNamespace>AegisAgent</RootNamespace>
+    
+    <!-- Assembly Information -->
+    <Company>Your Company Name</Company>
+    <Product>Aegis Security Monitoring Agent</Product>
+    <Description>Real-time security monitoring and threat detection agent for Windows endpoints</Description>
+    <Copyright>Copyright © 2025 Your Company</Copyright>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.0.0</Version>
+    
+    <!-- Application Icon -->
+    <!-- <ApplicationIcon>icon.ico</ApplicationIcon> -->
+    
+    <!-- Windows Application Manifest -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
