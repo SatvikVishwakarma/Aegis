@@ -28,7 +28,8 @@ export function getRelativeTime(date: string | Date): string {
   if (days > 0) return `${days}d ago`
   if (hours > 0) return `${hours}h ago`
   if (minutes > 0) return `${minutes}m ago`
-  return `${seconds}s ago`
+  if (seconds > 0) return `${seconds}s ago`
+  return 'just now'
 }
 
 export function getSeverityColor(severity: string): string {

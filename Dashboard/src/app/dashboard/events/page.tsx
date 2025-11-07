@@ -162,9 +162,6 @@ export default function EventsPage() {
                           <code className="text-sm text-slate-500 dark:text-slate-500">
                             {node.ip_address}
                           </code>
-                          <span className="text-sm text-slate-500 dark:text-slate-500">
-                            Last seen: {getRelativeTime(node.last_seen)}
-                          </span>
                         </div>
                       </div>
 

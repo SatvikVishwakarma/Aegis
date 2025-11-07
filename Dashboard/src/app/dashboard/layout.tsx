@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {  Moon, Sun, LogOut, Menu, Shield } from 'lucide-react'
@@ -14,22 +14,44 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const token = useAuthStore((state) => state.token)
   const logout = useAuthStore((state) => state.logout)
   const { isDark, toggleTheme } = useThemeStore()
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login')
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    // Only check auth once after mount
+    if (mounted && (!isAuthenticated || !token)) {
+      router.replace('/login')
     }
-  }, [isAuthenticated, router])
+  }, [mounted, isAuthenticated, token, router])
 
   const handleLogout = () => {
     logout()
-    router.push('/login')
+    router.replace('/login')
   }
 
-  if (!isAuthenticated) {
+  // Show loading while mounting
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 mb-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg animate-pulse">
+            <Shield className="w-8 h-8 text-white" />
+          </div>
+          <p className="text-slate-600 dark:text-slate-400">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Don't render dashboard if not authenticated
+  if (!isAuthenticated || !token) {
     return null
   }
 

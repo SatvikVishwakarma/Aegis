@@ -14,7 +14,11 @@ import {
   XCircle,
   Clock,
   Tag,
-  Wifi
+  Wifi,
+  Terminal,
+  FileText,
+  Shield,
+  Lock
 } from 'lucide-react'
 import { fetchNodes, fetchEvents } from '@/lib/api'
 import { Node, Event } from '@/types'
@@ -26,7 +30,7 @@ export default function NodeDetailPage() {
   const params = useParams()
   const router = useRouter()
   const nodeId = parseInt(params.id as string)
-  const [activeTab, setActiveTab] = useState<'events' | 'network'>('events')
+  const [activeTab, setActiveTab] = useState<'process' | 'network' | 'registry' | 'control'>('process')
 
   const { data: nodes } = useQuery<Node[]>({
     queryKey: ['nodes'],
@@ -43,11 +47,11 @@ export default function NodeDetailPage() {
     return nodes?.find(n => n.id === nodeId)
   }, [nodes, nodeId])
 
-  const eventLogs = useMemo(() => {
+  const processLogs = useMemo(() => {
     if (!events) return []
     return events.filter(e => {
       const type = e.event_type.toLowerCase()
-      return !type.includes('network') && !type.includes('connection')
+      return type.includes('process')
     })
   }, [events])
 
@@ -56,6 +60,22 @@ export default function NodeDetailPage() {
     return events.filter(e => {
       const type = e.event_type.toLowerCase()
       return type.includes('network') || type.includes('connection')
+    })
+  }, [events])
+
+  const registryLogs = useMemo(() => {
+    if (!events) return []
+    return events.filter(e => {
+      const type = e.event_type.toLowerCase()
+      return type.includes('registry')
+    })
+  }, [events])
+
+  const controlLogs = useMemo(() => {
+    if (!events) return []
+    return events.filter(e => {
+      const type = e.event_type.toLowerCase()
+      return type.includes('control') || type.includes('blocked') || type.includes('prevented')
     })
   }, [events])
 
@@ -113,7 +133,7 @@ export default function NodeDetailPage() {
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-4">
           <button
-            onClick={() => router.push('/dashboard/nodes')}
+            onClick={() => router.back()}
             className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
@@ -133,7 +153,7 @@ export default function NodeDetailPage() {
       </div>
 
       {/* Node Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm mb-1">
             <Server className="w-4 h-4" />
@@ -158,20 +178,10 @@ export default function NodeDetailPage() {
             Status
           </div>
           <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${node.status === 'online' ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+            <div className={`w-3 h-3 rounded-full ${node.status === 'online' ? 'bg-emerald-500' : 'bg-red-500'}`} />
             <span className="text-xl font-semibold text-slate-900 dark:text-white capitalize">
               {node.status}
             </span>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-          <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm mb-1">
-            <Clock className="w-4 h-4" />
-            Last Seen
-          </div>
-          <div className="text-xl font-semibold text-slate-900 dark:text-white">
-            {getRelativeTime(node.last_seen)}
           </div>
         </div>
       </div>
@@ -188,24 +198,24 @@ export default function NodeDetailPage() {
 
       {/* Tabs */}
       <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-        <div className="flex border-b border-slate-200 dark:border-slate-700">
+        <div className="flex border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
           <button
-            onClick={() => setActiveTab('events')}
-            className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative ${
-              activeTab === 'events'
+            onClick={() => setActiveTab('process')}
+            className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
+              activeTab === 'process'
                 ? 'text-primary border-b-2 border-primary'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <Activity className="w-5 h-5" />
-            Event Logs
+            <Terminal className="w-5 h-5" />
+            Process Logs
             <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-slate-100 dark:bg-slate-700">
-              {eventLogs.length}
+              {processLogs.length}
             </span>
           </button>
           <button
             onClick={() => setActiveTab('network')}
-            className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative ${
+            className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
               activeTab === 'network'
                 ? 'text-primary border-b-2 border-primary'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -217,6 +227,34 @@ export default function NodeDetailPage() {
               {networkLogs.length}
             </span>
           </button>
+          <button
+            onClick={() => setActiveTab('registry')}
+            className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
+              activeTab === 'registry'
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <FileText className="w-5 h-5" />
+            Registry Logs
+            <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-slate-100 dark:bg-slate-700">
+              {registryLogs.length}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('control')}
+            className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
+              activeTab === 'control'
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Shield className="w-5 h-5" />
+            Control Logs
+            <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-slate-100 dark:bg-slate-700">
+              {controlLogs.length}
+            </span>
+          </button>
         </div>
 
         {/* Logs Content */}
@@ -225,43 +263,43 @@ export default function NodeDetailPage() {
             <SkeletonTable rows={5} />
           ) : (
             <div className="space-y-3">
-              {activeTab === 'events' && (
+              {/* Process Logs */}
+              {activeTab === 'process' && (
                 <>
-                  {eventLogs.length === 0 ? (
+                  {processLogs.length === 0 ? (
                     <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-                      No event logs found for this node
+                      <Terminal className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>No process logs found for this node</p>
                     </div>
                   ) : (
-                    eventLogs.map((event) => (
+                    processLogs.map((event) => (
                       <motion.div
                         key={event.id}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4 border border-slate-200 dark:border-slate-600"
                       >
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-start gap-3 flex-1">
-                            {getSeverityIcon(event.severity)}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="font-semibold text-slate-900 dark:text-white">
-                                  {event.event_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                </h3>
-                                <span className={`px-2 py-0.5 text-xs font-medium rounded capitalize ${getSeverityColor(event.severity)}`}>
-                                  {event.severity}
-                                </span>
-                              </div>
-                              <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                                {new Date(event.timestamp).toLocaleString()}
-                              </p>
-                              {event.details && Object.keys(event.details).length > 0 && (
-                                <div className="bg-white dark:bg-slate-800 rounded p-3 mt-2">
-                                  <pre className="text-xs text-slate-700 dark:text-slate-300 overflow-x-auto">
-                                    {JSON.stringify(event.details, null, 2)}
-                                  </pre>
-                                </div>
-                              )}
+                        <div className="flex items-start gap-3">
+                          <Terminal className="w-5 h-5 text-primary mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-slate-900 dark:text-white">
+                                {event.event_type.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                              </h3>
+                              <span className={`px-2 py-0.5 text-xs font-medium rounded capitalize ${getSeverityColor(event.severity)}`}>
+                                {event.severity}
+                              </span>
                             </div>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                              {new Date(event.timestamp).toLocaleString()}
+                            </p>
+                            {event.details && Object.keys(event.details).length > 0 && (
+                              <div className="bg-white dark:bg-slate-800 rounded p-3 mt-2">
+                                <pre className="text-xs text-slate-700 dark:text-slate-300 overflow-x-auto">
+                                  {JSON.stringify(event.details, null, 2)}
+                                </pre>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </motion.div>
@@ -270,11 +308,13 @@ export default function NodeDetailPage() {
                 </>
               )}
 
+              {/* Network Logs */}
               {activeTab === 'network' && (
                 <>
                   {networkLogs.length === 0 ? (
                     <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-                      No network logs found for this node
+                      <Wifi className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>No network logs found for this node</p>
                     </div>
                   ) : (
                     networkLogs.map((event) => (
@@ -284,29 +324,117 @@ export default function NodeDetailPage() {
                         animate={{ opacity: 1, y: 0 }}
                         className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4 border border-slate-200 dark:border-slate-600"
                       >
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-start gap-3 flex-1">
-                            <Wifi className="w-5 h-5 text-primary mt-0.5" />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="font-semibold text-slate-900 dark:text-white">
-                                  {event.event_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                </h3>
-                                <span className={`px-2 py-0.5 text-xs font-medium rounded capitalize ${getSeverityColor(event.severity)}`}>
-                                  {event.severity}
-                                </span>
-                              </div>
-                              <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                                {new Date(event.timestamp).toLocaleString()}
-                              </p>
-                              {event.details && Object.keys(event.details).length > 0 && (
-                                <div className="bg-white dark:bg-slate-800 rounded p-3 mt-2">
-                                  <pre className="text-xs text-slate-700 dark:text-slate-300 overflow-x-auto">
-                                    {JSON.stringify(event.details, null, 2)}
-                                  </pre>
-                                </div>
-                              )}
+                        <div className="flex items-start gap-3">
+                          <Wifi className="w-5 h-5 text-primary mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-slate-900 dark:text-white">
+                                {event.event_type.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                              </h3>
+                              <span className={`px-2 py-0.5 text-xs font-medium rounded capitalize ${getSeverityColor(event.severity)}`}>
+                                {event.severity}
+                              </span>
                             </div>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                              {new Date(event.timestamp).toLocaleString()}
+                            </p>
+                            {event.details && Object.keys(event.details).length > 0 && (
+                              <div className="bg-white dark:bg-slate-800 rounded p-3 mt-2">
+                                <pre className="text-xs text-slate-700 dark:text-slate-300 overflow-x-auto">
+                                  {JSON.stringify(event.details, null, 2)}
+                                </pre>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))
+                  )}
+                </>
+              )}
+
+              {/* Registry Logs */}
+              {activeTab === 'registry' && (
+                <>
+                  {registryLogs.length === 0 ? (
+                    <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+                      <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>No registry logs found for this node</p>
+                    </div>
+                  ) : (
+                    registryLogs.map((event) => (
+                      <motion.div
+                        key={event.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4 border border-slate-200 dark:border-slate-600"
+                      >
+                        <div className="flex items-start gap-3">
+                          <FileText className="w-5 h-5 text-purple-500 mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-slate-900 dark:text-white">
+                                {event.event_type.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                              </h3>
+                              <span className={`px-2 py-0.5 text-xs font-medium rounded capitalize ${getSeverityColor(event.severity)}`}>
+                                {event.severity}
+                              </span>
+                            </div>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                              {new Date(event.timestamp).toLocaleString()}
+                            </p>
+                            {event.details && Object.keys(event.details).length > 0 && (
+                              <div className="bg-white dark:bg-slate-800 rounded p-3 mt-2">
+                                <pre className="text-xs text-slate-700 dark:text-slate-300 overflow-x-auto">
+                                  {JSON.stringify(event.details, null, 2)}
+                                </pre>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))
+                  )}
+                </>
+              )}
+
+              {/* Control Logs */}
+              {activeTab === 'control' && (
+                <>
+                  {controlLogs.length === 0 ? (
+                    <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+                      <Shield className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>No control/security logs found for this node</p>
+                    </div>
+                  ) : (
+                    controlLogs.map((event) => (
+                      <motion.div
+                        key={event.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4 border border-slate-200 dark:border-slate-600"
+                      >
+                        <div className="flex items-start gap-3">
+                          <Shield className="w-5 h-5 text-red-500 mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-slate-900 dark:text-white">
+                                {event.event_type.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                              </h3>
+                              <span className={`px-2 py-0.5 text-xs font-medium rounded capitalize ${getSeverityColor(event.severity)}`}>
+                                {event.severity}
+                              </span>
+                            </div>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                              {new Date(event.timestamp).toLocaleString()}
+                            </p>
+                            {event.details && Object.keys(event.details).length > 0 && (
+                              <div className="bg-white dark:bg-slate-800 rounded p-3 mt-2">
+                                <pre className="text-xs text-slate-700 dark:text-slate-300 overflow-x-auto">
+                                  {JSON.stringify(event.details, null, 2)}
+                                </pre>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </motion.div>

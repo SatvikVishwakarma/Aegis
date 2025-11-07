@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Server, Search, Plus, Trash2, Edit2, Circle, Tag, Filter } from 'lucide-react'
@@ -17,7 +17,17 @@ export default function NodesPage() {
   const [selectedGroup, setSelectedGroup] = useState<string>('all')
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingNode, setEditingNode] = useState<Node | null>(null)
+  const [updateTrigger, setUpdateTrigger] = useState(0)
   const queryClient = useQueryClient()
+
+  // Force re-render every 10 seconds to update relative times
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setUpdateTrigger(prev => prev + 1)
+    }, 10000) // Update every 10 seconds
+
+    return () => clearInterval(interval)
+  }, [])
 
   const { data: nodes, isLoading } = useQuery<Node[]>({
     queryKey: ['nodes'],
@@ -164,9 +174,6 @@ export default function NodesPage() {
                   <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                     Group
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Last Seen
-                  </th>
                   <th className="px-6 py-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                     Actions
                   </th>
@@ -195,7 +202,7 @@ export default function NodesPage() {
                               className={`w-3 h-3 ${
                                 node.status === 'online'
                                   ? 'fill-emerald-500 text-emerald-500'
-                                  : 'fill-slate-400 text-slate-400'
+                                  : 'fill-red-500 text-red-500'
                               }`}
                             />
                             {node.status === 'online' && (
@@ -203,9 +210,11 @@ export default function NodesPage() {
                             )}
                           </div>
                           <span
-                            className={`px-2 py-1 text-xs font-medium rounded capitalize ${getStatusColor(
-                              node.status
-                            )}`}
+                            className={`px-2 py-1 text-xs font-medium rounded capitalize ${
+                              node.status === 'online'
+                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'
+                                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                            }`}
                           >
                             {node.status}
                           </span>
@@ -235,11 +244,6 @@ export default function NodesPage() {
                         ) : (
                           <span className="text-sm text-slate-400 dark:text-slate-500">—</span>
                         )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-sm text-slate-600 dark:text-slate-400">
-                          {getRelativeTime(node.last_seen)}
-                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">

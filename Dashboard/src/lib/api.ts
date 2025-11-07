@@ -14,9 +14,18 @@ export const api = axios.create({
 
 // Add auth token to requests
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('aegis_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+  // Zustand persist stores the entire state object in localStorage
+  const authStorage = localStorage.getItem('aegis-auth')
+  if (authStorage) {
+    try {
+      const authState = JSON.parse(authStorage)
+      const token = authState.state?.token
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
+    } catch (e) {
+      console.error('Failed to parse auth storage:', e)
+    }
   }
   return config
 })
@@ -26,7 +35,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('aegis_token')
+      // Clear Zustand auth storage
+      localStorage.removeItem('aegis-auth')
       window.location.href = '/login'
     }
     return Promise.reject(error)

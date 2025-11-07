@@ -17,6 +17,7 @@ import agent_routes  # Agent package builder
 from db import engine
 from models import Base
 from websocket import manager
+from heartbeat_monitor import heartbeat_monitor
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -35,10 +36,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         except Exception as e:
             logger.error(f"Error creating database tables: {e}")
             raise
+    
+    # Start heartbeat monitor
+    await heartbeat_monitor.start()
 
     yield
 
     logger.info("Application shutdown...")
+    # Stop heartbeat monitor
+    await heartbeat_monitor.stop()
     await engine.dispose()
     logger.info("Shutdown complete.")
 

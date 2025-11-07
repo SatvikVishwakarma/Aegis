@@ -33,11 +33,9 @@ export const useAuthStore = create<AuthStore>()(
       token: null,
       isAuthenticated: false,
       setToken: (token: string) => {
-        localStorage.setItem('aegis_token', token)
         set({ token, isAuthenticated: true })
       },
       logout: () => {
-        localStorage.removeItem('aegis_token')
         set({ token: null, isAuthenticated: false })
       },
     }),

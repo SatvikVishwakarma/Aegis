@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Shield, Lock, User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -23,7 +23,7 @@ export default function LoginPage() {
       const data = await login(username, password)
       setToken(data.access_token)
       toast.success('Welcome to Aegis!')
-      router.push('/dashboard')
+      router.replace('/dashboard')
     } catch (error: any) {
       toast.error(error.response?.data?.detail || 'Invalid credentials')
     } finally {

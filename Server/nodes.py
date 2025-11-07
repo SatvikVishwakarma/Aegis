@@ -45,10 +45,12 @@ async def register_node(
     existing_node = result.scalar_one_or_none()
 
     if existing_node:
+        from datetime import datetime
         existing_node.ip_address = node_in.ip_address
         if node_in.group is not None:
             existing_node.group = node_in.group
         existing_node.status = "online"
+        existing_node.last_seen = datetime.utcnow()  # Update last_seen on re-registration
         await db.commit()
         await db.refresh(existing_node)
         
@@ -88,19 +90,26 @@ async def node_heartbeat(
     db: AsyncSession = Depends(get_db),
 ):
     """ Receives a heartbeat from an agent to indicate it is still active. """
+    from loguru import logger
+    logger.info(f"Heartbeat received from hostname: {heartbeat_in.hostname}")
+    
     stmt = select(models.Node).where(models.Node.hostname == heartbeat_in.hostname)
     result = await db.execute(stmt)
     node = result.scalar_one_or_none()
 
     if not node:
+        logger.warning(f"Heartbeat from unknown node: {heartbeat_in.hostname}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Node with hostname '{heartbeat_in.hostname}' not found.",
         )
 
+    from datetime import datetime
     node.status = "online"
+    node.last_seen = datetime.utcnow()  # Explicitly update last_seen
     await db.commit()
     await db.refresh(node)
+    logger.debug(f"Heartbeat processed for node {node.id}: {node.hostname}")
     return schemas.NodeResponse.model_validate(node)
 
 
