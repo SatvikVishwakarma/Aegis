@@ -9,7 +9,7 @@ It unifies a **FastAPI backend**, a **Next.js dashboard**, and a **Windows Agent
 
 | Component | Technology | Description |
 |------------|-------------|--------------|
-| **Server** | Python (FastAPI) | Handles authentication, API requests, event ingestion, and real-time WebSocket communication. |
+| **Server** | Python (FastAPI) | Handles authentication, API requests, event ingestion, background heartbeat monitoring, and real-time WebSocket communication. |
 | **Dashboard** | Next.js / React | Web-based user interface for managing nodes, visualizing events, and configuring policies. |
 | **Agent** | C# (.NET 8) | Windows service that continuously monitors processes, registry, and network activities. |
 
@@ -28,7 +28,7 @@ It unifies a **FastAPI backend**, a **Next.js dashboard**, and a **Windows Agent
 
 ### 2. Node Management
 - Add, edit, group, or remove nodes directly from the dashboard.
-- Track node health, status, and last seen timestamps.
+- Track node health and online/offline status (auto marks offline after heartbeat timeout).
 - Fuzzy search and filtering using Fuse.js for quick lookups.
 
 ### 3. Event Viewer
@@ -63,7 +63,15 @@ It unifies a **FastAPI backend**, a **Next.js dashboard**, and a **Windows Agent
 - Encrypted configuration files and token storage.
 - Role-based endpoint protection for destructive actions.
 
----
+
+## Recent Updates (November 2025)
+
+- Authentication stability: fixed dashboard login loop by improving persisted state hydration and navigation (uses router.replace) and aligning the axios interceptor with Zustand storage (`aegis-auth`).
+- Background heartbeat monitor: server marks nodes offline after ~90 seconds without heartbeat (check interval 30s), and broadcasts status changes over WebSocket.
+- Agent/server compatibility: C# models updated with `[JsonProperty]` snake_case fields (e.g., `ip_address`) to match FastAPI schemas.
+- Dashboard UX: simplified status display to online/offline; the previous "last seen" UI was removed by design to avoid timezone confusion (status remains real-time).
+- Navigation: node detail back button now respects browser history (returns to Events or Nodes list as appropriate).
+- Tooling: added `reset_database.py` (interactive + quick) and `check_lastseen.py` to inspect current node states.
 
 ## Architecture Overview
 
@@ -76,7 +84,7 @@ Aegis/
 │   ├── models.py
 │   ├── schemas.py
 │   ├── websocket.py
-│   └── requirements.txt
+│   └── requirments.txt
 │
 ├── Dashboard/           # Next.js frontend (React + Tailwind)
 │   ├── src/
@@ -113,7 +121,7 @@ aegis\Scripts\activate   # Windows
 source aegis/bin/activate   # Linux/Mac
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -r requirments.txt
 
 # Initialize database
 python database_setup.py
@@ -122,7 +130,10 @@ python database_setup.py
 cp .env.example .env
 # Edit .env to set SECRET_KEY and AGENT_API_KEY
 
-# Run server
+# Run server (choose one)
+# Option A: uvicorn (recommended)
+uvicorn app:app --reload --host 0.0.0.0 --port 8000
+# Option B: python entry script
 python app.py
 ```
 
@@ -142,6 +153,7 @@ npm run dev
 ```
 
 **Dashboard URL:** http://localhost:3000  
+Auth note: dashboard stores the JWT under the persisted key `aegis-auth` (Zustand). A 401 automatically clears it and redirects to login.
 
 ---
 
@@ -165,7 +177,7 @@ npm run dev
    - Option 1: Windows Service (auto-start, recommended for production)
    - Option 2: Console Mode (for testing and troubleshooting)
 
-**The endpoint will appear in the Dashboard's Nodes page within 30 seconds.**
+**The endpoint will appear in the Dashboard's Nodes page shortly after installation (heartbeats every ~60s).**
 
 #### Method 2: Manual Build (For Development)
 
@@ -214,27 +226,33 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 - **JWT Authentication:** All routes are token-protected.  
 - **Bcrypt Passwords:** Never stored in plaintext.  
 - **Admin Confirmation:** Required for all destructive actions (delete node/policy).  
-- **WebSocket Encryption:** Validates session tokens before data streaming.  
+- **WebSocket Auth:** Validates session tokens before data streaming.  
 - **Key Rotation:** API keys can be regenerated without downtime.
 
 ---
 
-## Deployment (Ubuntu Server)
+## Deployment (Linux)
 
 ```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install python3 python3-pip python3-venv git -y
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -bash -
-sudo apt install nodejs -y
+sudo apt update && sudo apt install -y python3 python3-venv python3-pip nodejs npm
 
-git clone https://github.com/SatvikVishwakarma/Aegis.git
+# Server
 cd Aegis/Server
-chmod +x setup_and_start.sh
-./setup_and_start.sh
+python3 -m venv aegis
+source aegis/bin/activate
+pip install -r requirments.txt
+python database_setup.py
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+
+# Dashboard (new terminal)
+cd ../Dashboard
+npm install
+echo "NEXT_PUBLIC_API_URL=http://<server-ip>:8000" > .env.local
+npm run dev
 ```
 
-**Server runs on port 8000**  
-**Dashboard runs on port 3000**
+Server default: port 8000  
+Dashboard default: port 3000
 
 ---
 
@@ -244,9 +262,11 @@ chmod +x setup_and_start.sh
 |--------|----------------|-----|
 | Server won’t start | Port already in use | Kill process on port 8000 or change `.env` |
 | Dashboard not loading | Wrong API URL | Update `NEXT_PUBLIC_API_URL` |
-| Agent not registering | Invalid API key | Verify key in `appsettings.json` |
+| Agent not registering | Invalid API key | Verify key in `appsettings.json` and server `.env` |
 | No events received | Collectors disabled | Enable in `appsettings.json` |
 | Login fails | Expired JWT | Re-login to obtain new token |
+| Stuck in login loop | Outdated persisted token | Clear localStorage key `aegis-auth` and retry |
+| 401 on nodes/logs | Missing/old token in interceptor | Ensure axios reads `aegis-auth.state.token` |
 
 ---
 
